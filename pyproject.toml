@@ -10,10 +10,15 @@ keywords = ["Excel", "n-grams"]
 excel-ngrams = "excel_ngrams.console:main"
 
 [tool.poetry.dependencies]
-python = "^3.7"
+python = "^3.7.1"
 click = "^7.1.2"
+pandas = "^1.2.1"
+openpyxl = "^3.0.6"
 
 [tool.poetry.dev-dependencies]
+pytest = "^6.2.1"
+coverage = {version = "^5.3.1", extras = ["toml"]}
+pytest-cov = "^2.11.1"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
