@@ -6,21 +6,26 @@ import pandas as pd
 
 nlp = spacy.load("en_core_web_sm")
 
-class Grammer:
+
+class FileToList:
 
     def __init__(self, path, column_name):
         self.path = path
         self.column_name = column_name
+        self.term_list = self.get_terms()
 
-    @cached_property
-    def term_list(self):
+    def get_terms(self):
         df = pd.read_excel(self.path)
         return df[self.column_name].tolist()
 
+class Grammer:
 
-    def get_ngrams(self, n, term_list=term_list, top_n=100):
+    def __init__(self, file_to_list, path, column_name):
+        self.term_list = file_to_list.get_terms(path, column_name)
+
+    def get_ngrams(self, n, top_n=100):
         word_list = []
-        for doc in list(nlp.pipe(term_list)):
+        for doc in list(nlp.pipe(self.term_list)):
             for token in doc:
                 word = token.text.lower()
                 word_list.append(word)
@@ -30,10 +35,10 @@ class Grammer:
             )[:top_n]
         return list(zip(n_grams_series.index, n_grams_series))
 
-    def ngram_range(self, max_n, term_list=term_list):
+    def ngram_range(self, max_n):
         ngrams_range = dict()
         for i in range(2, max_n+1):
-            ngrams_i = self.get_ngrams(i, term_list)
+            ngrams_i = self.get_ngrams(i, self.term_list)
             ngrams_range[i] = ngrams_i
         print(ngrams_range)
         return ngrams_range
