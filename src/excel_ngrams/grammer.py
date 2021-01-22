@@ -12,16 +12,19 @@ class FileToList:
     def __init__(self, path, column_name):
         self.path = path
         self.column_name = column_name
-        self.term_list = self.get_terms()
+        self.term_list = self.set_terms(path, column_name)
 
-    def get_terms(self):
+    def set_terms(self, path, column_name):
         df = pd.read_excel(self.path)
         return df[self.column_name].tolist()
 
+    def get_terms(self):
+        return self.term_list
+
 class Grammer:
 
-    def __init__(self, file_to_list, path, column_name):
-        self.term_list = file_to_list.get_terms(path, column_name)
+    def __init__(self, file_to_list):
+        self.term_list = file_to_list.get_terms()
 
     def get_ngrams(self, n, top_n=100):
         word_list = []
@@ -38,7 +41,7 @@ class Grammer:
     def ngram_range(self, max_n):
         ngrams_range = dict()
         for i in range(2, max_n+1):
-            ngrams_i = self.get_ngrams(i, self.term_list)
+            ngrams_i = self.get_ngrams(i)
             ngrams_range[i] = ngrams_i
         print(ngrams_range)
         return ngrams_range
