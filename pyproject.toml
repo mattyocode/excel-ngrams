@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "excel-ngrams"
+version = "0.1.0"
+description = "An app to output n-grams from column in Excel spreadsheet"
+authors = ["mattyocode <matthewoliver@live.co.uk>"]
+repository = "https://github.com/mattyocode/excel-ngrams"
+keywords = ["Excel", "n-grams"]
+
+[tool.poetry.scripts]
+excel-ngrams = "excel_ngrams.console:main"
+
+[tool.poetry.dependencies]
+python = "^3.7"
+click = "^7.1.2"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
