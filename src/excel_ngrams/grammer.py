@@ -1,4 +1,5 @@
-from functools import cached_property
+import os
+import re
 
 import spacy
 import nltk
@@ -8,27 +9,36 @@ import pandas as pd
 nlp = spacy.load("en_core_web_sm")
 
 
-class FileToList:
+class FileHandler:
 
-    def __init__(self, path, column_name):
-        self.path = path
+    def __init__(self, file_path, column_name):
+        self.file_path = file_path
         self.column_name = column_name
-        self.term_list = self.set_terms(path, column_name)
+        self.term_list = self.set_terms(file_path, column_name)
 
     def set_terms(self, path, column_name):
-        df = pd.read_excel(self.path)
+        df = pd.read_excel(self.file_path)
         return df[self.column_name].tolist()
 
     def get_terms(self):
         return self.term_list
 
-    def get_path(self):
-        return self.path
+    def get_file_path(self):
+        return self.file_path
+
+    def write_to_file_path(self):
+        file_name = os.path.splitext(self.file_path)[0]
+        return file_name + '_n-grams'
+
+    # def write_df_to_file(self, df):
+        
+    #     df.to_csv(path)
+
 
 class Grammer:
 
     def __init__(self, file_to_list):
-        self.file_path = file_to_list.get_path()
+        self.file_path = file_to_list.get_file_path()
         self.term_list = file_to_list.get_terms()
 
     def get_ngrams(self, n, top_n=100):
@@ -61,9 +71,9 @@ class Grammer:
     def combine_dataframes(self, df_list):
         # existing_df = existing_df.reset_index()
         # new_df = new_df.reset_index()
-        df = df_list
-        print(pd.concat(df, axis=1))
-        return pd.concat(df, axis=1)
+        dfs = [df for df in df_list]
+        print(pd.concat(dfs, axis=1))
+        return pd.concat(dfs, axis=1)
 
     def ngram_range(self, max_n):
         df_list = []
@@ -78,8 +88,3 @@ class Grammer:
             return df_list[0]
 
 
-    #     ngrams_range = dict()
-    #     for i in range(2, max_n+1):
-    #         ngrams_i = self.get_ngrams(i)
-    #         ngrams_range[i] = ngrams_i
-    #     return ngrams_range

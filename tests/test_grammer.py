@@ -5,7 +5,7 @@ import pandas as pd
 import pytest
 
 import excel_ngrams
-from excel_ngrams.grammer import FileToList, Grammer
+from excel_ngrams.grammer import FileHandler, Grammer
 
 
 @pytest.fixture
@@ -22,33 +22,37 @@ def mock_df_from_tuple_list(mocker):
 
 
 @pytest.fixture
-def file_to_list():
-    file_to_list = FileToList(
+def file_handler():
+    file_handler = FileHandler(
         'input/test_search_listings.xlsx',
         'Keyword'
         )
-    return file_to_list
+    return file_handler
 
 @pytest.fixture
 def grammer_instance():
-    file_to_list_mock = Mock()
+    file_handler_mock = Mock()
     grammer_instance = Grammer(
-        file_to_list_mock,
+        file_handler_mock,
         )
     return grammer_instance
 
 
-def test_file_to_list_gets_term_list_attribute(file_to_list):
-    result = file_to_list.get_terms()
+def test_file_handler_gets_term_list_attribute(file_handler):
+    result = file_handler.get_terms()
     assert type(result) == list
 
 
-def test_gets_words_list_from_excel(file_to_list):
-    result = file_to_list.get_terms()
+def test_gets_words_list_from_excel(file_handler):
+    result = file_handler.get_terms()
     assert result == [
         'diet snacks', 'keto snacks', 
         'low carb snacks', 'low calorie snacks'
         ]
+
+def test_write_to_file_path(file_handler):
+    output = file_handler.write_to_file_path()
+    assert output == 'input/test_search_listings_n-grams'
 
 
 def test_get_bi_grams_mocked(grammer_instance):
@@ -77,41 +81,18 @@ def test_get_tri_grams(grammer_instance):
     assert result == [(('best', 'thing', 'ever'), 3)]
 
 
-# def test_ngram_range(grammer_instance, mock_get_ngrams):
-#     grammer_instance.term_list = ['test', 'test two']
-#     grammer_instance.ngram_range(3)
-#     assert 2 == mock_get_ngrams.call_count
-
-
-# def test_ngram_dict_w_n_value_as_key(grammer_instance, mock_get_ngrams):
-#     grammer_instance.term_list = ['test', 'test two']
-#     output = grammer_instance.ngram_range(3)
-#     assert 2 in output.keys()
-#     assert 3 in output.keys()
-
-
 def test_get_bi_grams_from_file():
     """It returns bigram from test file."""
-    file_to_list = FileToList(
+    file_handler = FileHandler(
         'input/test_search_listings.xlsx',
         'Keyword'
         )
-    grammer_from_list = Grammer(file_to_list)
+    grammer_from_list = Grammer(file_handler)
     result = grammer_from_list.get_ngrams(
         n=2, top_n=1
     )
     assert result == [(('snacks', 'low'), 2)]
 
-
-# def test_ngram_range_from_file():
-#     file_to_list = FileToList(
-#         'input/test_search_listings.xlsx',
-#         'Keyword'
-#         )
-#     grammer_from_list = Grammer(file_to_list)
-#     output = grammer_from_list.ngram_range(2)
-#     assert ('snacks', 'low') in output[2][0]
-#     assert 2 in output.keys()
 
 def test_terms_to_columns(grammer_instance):
     tuple_list = [
@@ -178,6 +159,24 @@ def test_ngram_range_2_gram_only(grammer_instance, mock_get_ngrams, mock_df_from
     output_df = grammer_instance.ngram_range(2)
     assert len(output_df.columns) == 2
     assert mock_get_ngrams.call_count == 1
+
+def test_ngram_range_3_gram(grammer_instance, mock_get_ngrams, mock_df_from_tuple_list):
+    dataframe_return_values = [pd.DataFrame(
+        {
+            "2 gram": ["snacks low", "low cal"],
+            "2 gram frequency": [2, 1],
+        }
+        ),
+        pd.DataFrame(
+        {
+            "3 gram": ["big snacks low", "low cal time"],
+            "3 gram frequency": [7, 3],
+        }
+        )]
+    mock_df_from_tuple_list.side_effect = dataframe_return_values
+    output_df = grammer_instance.ngram_range(3)
+    assert len(output_df.columns) == 4
+    assert mock_get_ngrams.call_count == 2
 
 
 
