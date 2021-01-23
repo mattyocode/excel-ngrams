@@ -12,6 +12,10 @@ from excel_ngrams.grammer import FileToList, Grammer
 def mock_get_ngrams(mocker):
     return mocker.patch("excel_ngrams.grammer.Grammer.get_ngrams")
 
+@pytest.fixture
+def mock_terms_to_cols(mocker):
+    return mocker.patch("excel_ngrams.grammer.Grammer.terms_to_columns")
+
 
 @pytest.fixture
 def file_to_list():
@@ -105,18 +109,18 @@ def test_ngram_range_from_file():
     assert ('snacks', 'low') in output[2][0]
     assert 2 in output.keys()
 
-def test_terms_tuple_to_string(grammer_instance, mock_get_ngrams):
-    tuple_list = [
-        (('snacks', 'low'), 2),
-        (('low', 'calorie'), 1)
-    ]
-    output = grammer_instance.terms_tuple_to_string(tuple_list)
-    assert output == [
-        ('snacks low', 2),
-        ('low calorie', 1)
-    ]
+# def test_terms_tuple_to_string(grammer_instance, mock_get_ngrams):
+#     tuple_list = [
+#         (('snacks', 'low'), 2),
+#         (('low', 'calorie'), 1)
+#     ]
+#     output = grammer_instance.terms_tuple_to_string(tuple_list)
+#     assert output == [
+#         ('snacks low', 2),
+#         ('low calorie', 1)
+    # ]
 
-def test_terms_tuple_to_string(grammer_instance):
+def test_terms_to_columns(grammer_instance):
     tuple_list = [
         (('snacks', 'low'), 2),
         (('low', 'calorie'), 1)
@@ -127,6 +131,12 @@ def test_terms_tuple_to_string(grammer_instance):
     assert output_values == [2, 1]
 
 
+def test_tuple_list_to_dataframe(grammer_instance, mock_terms_to_cols):
+    mock_terms_to_cols.return_value = [
+        'snacks low', 'low calorie'], [2, 1]
+    test_tuple_list = [(('test', 'thing'), 3)]
+    df = grammer_instance.df_from_tuple_list(test_tuple_list)
+    assert df.shape == (2, 2)
 
 # @pytest.mark.parametrize(
 #     "test_input,expected",

@@ -49,18 +49,28 @@ class Grammer:
             ngrams_range[i] = ngrams_i
         return ngrams_range
 
-    def terms_tuple_to_string(self, tuple_list):
-        for i in range(len(tuple_list)):
-            terms, number = tuple_list[i]
-            terms = ' '.join(terms)
-            tuple_list[i] = (terms, number)
-        return tuple_list
+    # def terms_tuple_to_string(self, tuple_list):
+    #     for i in range(len(tuple_list)):
+    #         terms, number = tuple_list[i]
+    #         terms = ' '.join(terms)
+    #         tuple_list[i] = (terms, number)
+    #     return tuple_list
 
     def terms_to_columns(self, tuple_list):
         term_col, value_col = zip(*tuple_list)
         term_col = [' '.join(term) for term in term_col]
         value_col = list(value_col)
         return term_col, value_col
+
+    def df_from_tuple_list(self, tuple_list):
+        term_col, value_col = self.terms_to_columns(tuple_list)
+        ngram_val = len(term_col[0])
+        terms_header = f'{ngram_val} gram'
+        freq_header = f'{ngram_val} frequency'
+        dict_ = {terms_header: term_col,
+                freq_header: value_col}
+        df = pd.DataFrame(dict_, columns=[terms_header, freq_header])
+        return df
 
     # def df_from_dict(self, terms_dict):
     #     return pd.DataFrame.from_dict(terms_dict)
