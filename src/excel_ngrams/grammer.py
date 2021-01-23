@@ -45,4 +45,11 @@ class Grammer:
             ngrams_range[i] = ngrams_i
         return ngrams_range
 
-    
+    def tuple_to_string(self, tuple_list):
+        for i in range(len(tuple_list)):
+            terms, number = tuple_list[i]
+            terms = ' '.join(terms)
+            tuple_list[i] = (terms, number)
+        return tuple_list
+
+        

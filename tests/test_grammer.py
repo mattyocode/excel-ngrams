@@ -88,6 +88,7 @@ def test_ngram_dict_w_n_value_as_key(grammer_instance, mock_get_ngrams):
 
 
 def test_get_bi_grams_from_file():
+    """It returns bigram from test file."""
     file_to_list = FileToList(
         'input/test_search_listings.xlsx',
         'Keyword'
@@ -108,3 +109,14 @@ def test_ngram_range_from_file():
     output = grammer_from_list.ngram_range(2)
     assert ('snacks', 'low') in output[2][0]
     assert 2 in output.keys()
+
+def test_tuple_to_string(grammer_instance, mock_get_ngrams):
+    tuple_list = [
+        (('snacks', 'low'), 2),
+        (('low', 'calorie'), 1)
+    ]
+    output = grammer_instance.tuple_to_string(tuple_list)
+    assert output == [
+        ('snacks low', 2),
+        ('low calorie', 1)
+    ]
