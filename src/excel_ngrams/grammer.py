@@ -2,6 +2,7 @@ from functools import cached_property
 
 import spacy
 import nltk
+import numpy as np
 import pandas as pd
 
 nlp = spacy.load("en_core_web_sm")
@@ -21,9 +22,13 @@ class FileToList:
     def get_terms(self):
         return self.term_list
 
+    def get_path(self):
+        return self.path
+
 class Grammer:
 
     def __init__(self, file_to_list):
+        self.file_path = file_to_list.get_path()
         self.term_list = file_to_list.get_terms()
 
     def get_ngrams(self, n, top_n=100):
@@ -32,7 +37,6 @@ class Grammer:
             for token in doc:
                 word = token.text.lower()
                 word_list.append(word)
-
         n_grams_series = (
             pd.Series(nltk.ngrams(word_list, n)).value_counts()
             )[:top_n]
@@ -45,11 +49,18 @@ class Grammer:
             ngrams_range[i] = ngrams_i
         return ngrams_range
 
-    def tuple_to_string(self, tuple_list):
+    def terms_tuple_to_string(self, tuple_list):
         for i in range(len(tuple_list)):
             terms, number = tuple_list[i]
             terms = ' '.join(terms)
             tuple_list[i] = (terms, number)
         return tuple_list
 
-        
+    def terms_to_columns(self, tuple_list):
+        term_col, value_col = zip(*tuple_list)
+        term_col = [' '.join(term) for term in term_col]
+        value_col = list(value_col)
+        return term_col, value_col
+
+    # def df_from_dict(self, terms_dict):
+    #     return pd.DataFrame.from_dict(terms_dict)

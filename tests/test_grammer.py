@@ -1,4 +1,7 @@
+# from datatest import validate
 from unittest.mock import Mock, patch
+
+import pandas as pd
 import pytest
 
 import excel_ngrams
@@ -25,14 +28,6 @@ def grammer_instance():
         file_to_list_mock,
         )
     return grammer_instance
-
-
-# @pytest.fixture
-# def grammer_from_file(file_to_list):
-#     grammer_from_file = Grammer(
-#         file_to_list,
-
-#     )
 
 
 def test_file_to_list_gets_term_list_attribute(file_to_list):
@@ -110,13 +105,39 @@ def test_ngram_range_from_file():
     assert ('snacks', 'low') in output[2][0]
     assert 2 in output.keys()
 
-def test_tuple_to_string(grammer_instance, mock_get_ngrams):
+def test_terms_tuple_to_string(grammer_instance, mock_get_ngrams):
     tuple_list = [
         (('snacks', 'low'), 2),
         (('low', 'calorie'), 1)
     ]
-    output = grammer_instance.tuple_to_string(tuple_list)
+    output = grammer_instance.terms_tuple_to_string(tuple_list)
     assert output == [
         ('snacks low', 2),
         ('low calorie', 1)
     ]
+
+def test_terms_tuple_to_string(grammer_instance):
+    tuple_list = [
+        (('snacks', 'low'), 2),
+        (('low', 'calorie'), 1)
+    ]
+    output = grammer_instance.terms_to_columns(tuple_list)
+    output_terms, output_values = output
+    assert output_terms == ['snacks low', 'low calorie']
+    assert output_values == [2, 1]
+
+
+
+# @pytest.mark.parametrize(
+#     "test_input,expected",
+#     [
+#         ({2: [(('snacks', 'low'), 2), (('other', 'stuff'), 1)]}, (2, 1)),
+#         ({2: [(('snacks', 'low'), 2), (('other', 'stuff'), 1)],
+#             3: [(('three', 'snacks', 'low'), 2), (('other', 'some', 'stuff'), 1)]}, (2, 2)),
+#         ({2: [(('snacks', 'low'), 2), (('other', 'stuff'), 1), (('one', 'more'), 1)],
+#             3: [(('three', 'snacks', 'low'), 2), (('other', 'some', 'stuff'), 1)]}, (3, 2)),
+#     ]
+# )
+# def test_ngrams_dict_to_dataframe(grammer_instance, test_input, expected):
+#     df = grammer_instance.df_from_dict(test_input)
+#     assert df.shape == expected
