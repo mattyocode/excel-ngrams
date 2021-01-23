@@ -12,13 +12,15 @@ nlp = spacy.load("en_core_web_sm")
 
 class FileHandler:
 
-    def __init__(self, file_path, column_name):
+    def __init__(self, file_path, sheet_name=0, column_name="Keyword"):
         self.file_path = file_path
+        self.sheet_name = sheet_name
         self.column_name = column_name
-        self.term_list = self.set_terms(file_path, column_name)
+        self.term_list = self.set_terms(
+            file_path, sheet_name, column_name)
 
-    def set_terms(self, path, column_name):
-        df = pd.read_excel(self.file_path)
+    def set_terms(self, path, sheet_name, column_name):
+        df = pd.read_excel(self.file_path, sheet_name=sheet_name)
         return df[self.column_name].tolist()
 
     def get_terms(self):
@@ -27,22 +29,24 @@ class FileHandler:
     def get_file_path(self):
         return self.file_path
 
-    def write_to_file_path(self):
+    def get_destination_path(self):
         file_name = os.path.splitext(self.file_path)[0]
         now = datetime.datetime.now()
         date_time = now.strftime("%Y%m%d%H%M%S")
         return f"{file_name}_{date_time}_n-grams"
 
-    # def write_df_to_file(self, df):
-        
-    #     df.to_csv(path)
+    def write_df_to_file(self, df):
+        path = self.get_destination_path()
+        df.to_csv(f"{path}.csv")
+        return True
 
 
 class Grammer:
 
-    def __init__(self, file_to_list):
-        self.file_path = file_to_list.get_file_path()
-        self.term_list = file_to_list.get_terms()
+    def __init__(self, file_handler):
+        self.file_handler = file_handler
+        self.file_path = file_handler.get_file_path()
+        self.term_list = file_handler.get_terms()
 
     def get_ngrams(self, n, top_n=100):
         word_list = []
@@ -90,4 +94,21 @@ class Grammer:
         else:
             return df_list[0]
 
+    def output_csv_file(self, df):
+        try:
+            self.file_handler.write_df_to_file(df)
+            return True
+        except Exception as e:
+            return f'Error: {e}'
 
+if __name__ == "__main__":
+
+
+    file_path = "input/snacks_large_test.xlsx"
+    sheet_name = '0315'
+    column_name = "Keyword"
+    max_n = 4
+    read_file = FileHandler(file_path, sheet_name, column_name)
+    grammer = Grammer(read_file)
+    n_gram_dataframe = grammer.ngram_range(max_n)
+    grammer.output_csv_file(n_gram_dataframe)

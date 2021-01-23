@@ -1,4 +1,5 @@
 from unittest.mock import Mock, patch
+from io import StringIO
 
 from freezegun import freeze_time
 import pandas as pd
@@ -52,8 +53,12 @@ def test_gets_words_list_from_excel(file_handler):
 
 def test_write_to_file_path(file_handler):
     with freeze_time("2020-11-22 01:02:03"):
-        output = file_handler.write_to_file_path()
+        output = file_handler.get_destination_path()
         assert output == 'input/test_search_listings_20201122010203_n-grams'
+
+
+def test_writes_csv_file(file_handler):
+    pass
 
 
 def test_get_bi_grams_mocked(grammer_instance):
