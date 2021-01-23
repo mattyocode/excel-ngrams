@@ -1,4 +1,5 @@
 import os
+import datetime
 import re
 
 import spacy
@@ -28,7 +29,9 @@ class FileHandler:
 
     def write_to_file_path(self):
         file_name = os.path.splitext(self.file_path)[0]
-        return file_name + '_n-grams'
+        now = datetime.datetime.now()
+        date_time = now.strftime("%Y%m%d%H%M%S")
+        return f"{file_name}_{date_time}_n-grams"
 
     # def write_df_to_file(self, df):
         

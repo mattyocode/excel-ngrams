@@ -105,6 +105,17 @@ optional = false
 python-versions = "*"
 
 [[package]]
+name = "freezegun"
+version = "1.1.0"
+description = "Let your Python tests travel through time"
+category = "dev"
+optional = false
+python-versions = ">=3.5"
+
+[package.dependencies]
+python-dateutil = ">=2.7"
+
+[[package]]
 name = "idna"
 version = "2.10"
 description = "Internationalized Domain Names in Applications (IDNA)"
@@ -525,7 +536,7 @@ testing = ["pytest (>=3.5,!=3.7.3)", "pytest-checkdocs (>=1.2.3)", "pytest-flake
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7.1"
-content-hash = "5a03f352a0e46c25e02675921569ffc74bc5d083a3cfcbb1abce4e589e86797d"
+content-hash = "66c513c03447fe586afb5c8056225909b419dde27b841a47d0ef4082150612ea"
 
 [metadata.files]
 atomicwrites = [
@@ -639,6 +650,10 @@ cymem = [
 ]
 et-xmlfile = [
     {file = "et_xmlfile-1.0.1.tar.gz", hash = "sha256:614d9722d572f6246302c4491846d2c393c199cfa4edc9af593437691683335b"},
+]
+freezegun = [
+    {file = "freezegun-1.1.0-py2.py3-none-any.whl", hash = "sha256:2ae695f7eb96c62529f03a038461afe3c692db3465e215355e1bb4b0ab408712"},
+    {file = "freezegun-1.1.0.tar.gz", hash = "sha256:177f9dd59861d871e27a484c3332f35a6e3f5d14626f2bf91be37891f18927f3"},
 ]
 idna = [
     {file = "idna-2.10-py2.py3-none-any.whl", hash = "sha256:b97d804b1e9b523befed77c48dacec60e6dcb0b5391d57af6a65a312a90648c0"},
