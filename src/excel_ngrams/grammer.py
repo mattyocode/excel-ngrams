@@ -42,20 +42,6 @@ class Grammer:
             )[:top_n]
         return list(zip(n_grams_series.index, n_grams_series))
 
-    def ngram_range(self, max_n):
-        ngrams_range = dict()
-        for i in range(2, max_n+1):
-            ngrams_i = self.get_ngrams(i)
-            ngrams_range[i] = ngrams_i
-        return ngrams_range
-
-    # def terms_tuple_to_string(self, tuple_list):
-    #     for i in range(len(tuple_list)):
-    #         terms, number = tuple_list[i]
-    #         terms = ' '.join(terms)
-    #         tuple_list[i] = (terms, number)
-    #     return tuple_list
-
     def terms_to_columns(self, tuple_list):
         term_col, value_col = zip(*tuple_list)
         term_col = [' '.join(term) for term in term_col]
@@ -64,13 +50,36 @@ class Grammer:
 
     def df_from_tuple_list(self, tuple_list):
         term_col, value_col = self.terms_to_columns(tuple_list)
-        ngram_val = len(term_col[0])
-        terms_header = f'{ngram_val} gram'
-        freq_header = f'{ngram_val} frequency'
+        ngram_val = len(term_col[0].split())
+        terms_header = f'{ngram_val}-gram'
+        freq_header = f'{ngram_val}-gram frequency'
         dict_ = {terms_header: term_col,
                 freq_header: value_col}
         df = pd.DataFrame(dict_, columns=[terms_header, freq_header])
         return df
 
-    # def df_from_dict(self, terms_dict):
-    #     return pd.DataFrame.from_dict(terms_dict)
+    def combine_dataframes(self, df_list):
+        # existing_df = existing_df.reset_index()
+        # new_df = new_df.reset_index()
+        df = df_list
+        print(pd.concat(df, axis=1))
+        return pd.concat(df, axis=1)
+
+    def ngram_range(self, max_n):
+        df_list = []
+        for i in range(2, max_n + 1):
+            ngrams_list = self.get_ngrams(i)
+            df = self.df_from_tuple_list(ngrams_list)
+            df_list.append(df)
+        if len(df_list) > 1:
+            combined_dataframe = self.combine_dataframes(df_list)
+            return combined_dataframe
+        else:
+            return df_list[0]
+
+
+    #     ngrams_range = dict()
+    #     for i in range(2, max_n+1):
+    #         ngrams_i = self.get_ngrams(i)
+    #         ngrams_range[i] = ngrams_i
+    #     return ngrams_range
