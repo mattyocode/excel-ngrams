@@ -106,7 +106,5 @@ def test_ngram_range_from_file():
         )
     grammer_from_list = Grammer(file_to_list)
     output = grammer_from_list.ngram_range(2)
-
-    print(output.values())
-    assert (('snacks', 'low'), 2) in output.values()
+    assert ('snacks', 'low') in output[2][0]
     assert 2 in output.keys()

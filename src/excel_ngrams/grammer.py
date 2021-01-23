@@ -43,7 +43,6 @@ class Grammer:
         for i in range(2, max_n+1):
             ngrams_i = self.get_ngrams(i)
             ngrams_range[i] = ngrams_i
-        print(ngrams_range)
         return ngrams_range
 
     
