@@ -19,8 +19,8 @@ class FileHandler:
         self.term_list = self.set_terms(
             file_path, sheet_name, column_name)
 
-    def set_terms(self, path, sheet_name, column_name):
-        df = pd.read_excel(self.file_path, sheet_name=sheet_name)
+    def set_terms(self, file_path, sheet_name, column_name):
+        df = pd.read_excel(file_path, sheet_name=sheet_name)
         return df[self.column_name].tolist()
 
     def get_terms(self):
@@ -48,7 +48,7 @@ class Grammer:
         self.file_path = file_handler.get_file_path()
         self.term_list = file_handler.get_terms()
 
-    def get_ngrams(self, n, top_n=100):
+    def get_ngrams(self, n, top_n_results=150):
         word_list = []
         for doc in list(nlp.pipe(self.term_list)):
             for token in doc:
@@ -56,7 +56,7 @@ class Grammer:
                 word_list.append(word)
         n_grams_series = (
             pd.Series(nltk.ngrams(word_list, n)).value_counts()
-            )[:top_n]
+            )[:top_n_results]
         return list(zip(n_grams_series.index, n_grams_series))
 
     def terms_to_columns(self, tuple_list):
@@ -82,10 +82,10 @@ class Grammer:
         print(pd.concat(dfs, axis=1))
         return pd.concat(dfs, axis=1)
 
-    def ngram_range(self, max_n):
+    def ngram_range(self, max_n, top_n_results=150):
         df_list = []
         for i in range(2, max_n + 1):
-            ngrams_list = self.get_ngrams(i)
+            ngrams_list = self.get_ngrams(i, top_n_results)
             df = self.df_from_tuple_list(ngrams_list)
             df_list.append(df)
         if len(df_list) > 1:

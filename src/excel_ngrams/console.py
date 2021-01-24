@@ -1,4 +1,5 @@
 import click
+from click import ClickException
 
 from . import __version__
 from .grammer import FileHandler, Grammer
@@ -7,6 +8,7 @@ from .grammer import FileHandler, Grammer
 @click.option(
     "--file-path",
     "-f",
+    type=click.Path(exists=True),
     required=True)
 @click.option(
     '--sheet-name',
@@ -25,17 +27,25 @@ from .grammer import FileHandler, Grammer
     '-m',
     default=5, 
     show_default=True)
+@click.option(
+    '--top-results',
+    '-t',
+    default=150, 
+    show_default=True)
 @click.version_option(version=__version__)
-def main(file_path, sheet_name, column_name, max_n):
+def main(file_path, sheet_name, column_name, max_n, top_results):
     """Excel n-grams project."""
-    read_file = FileHandler(
-        file_path=file_path,
-        sheet_name=sheet_name,
-        column_name=column_name)
+    try:
+        read_file = FileHandler(
+            file_path=file_path,
+            sheet_name=sheet_name,
+            column_name=column_name)
+    except ClickException as e:
+        ClickException.show()
     click.echo("Reading file...")
     grammer = Grammer(read_file)
     click.echo("Performing n-gram analysis...")
-    n_gram_dataframe = grammer.ngram_range(max_n)
+    n_gram_dataframe = grammer.ngram_range(max_n, top_n_results=top_results)
     output_file_path = grammer.output_csv_file(n_gram_dataframe)
 
     click.secho(f"CSV file written to {output_file_path}.", fg="green")

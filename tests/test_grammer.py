@@ -4,6 +4,7 @@ from io import StringIO
 from freezegun import freeze_time
 import pandas as pd
 import pytest
+from pytest_mock import MockFixture
 
 import excel_ngrams
 from excel_ngrams.grammer import FileHandler, Grammer
@@ -26,7 +27,7 @@ def mock_df_from_tuple_list(mocker):
 def file_handler():
     file_handler = FileHandler(
         'input/test_search_listings.xlsx',
-        'Keyword'
+        column_name='Keyword'
         )
     return file_handler
 
@@ -69,7 +70,7 @@ def test_get_bi_grams_mocked(grammer_instance):
         'not the best thing ever'
         ]
     result = grammer_instance.get_ngrams(
-        n=2, top_n=1
+        n=2, top_n_results=1
     )
     assert result == [(('best', 'thing'), 3)]
 
@@ -82,7 +83,7 @@ def test_get_tri_grams(grammer_instance):
         'not the best thing ever'
         ]
     result = grammer_instance.get_ngrams(
-        n=3, top_n=1
+        n=3, top_n_results=1
     )
     assert result == [(('best', 'thing', 'ever'), 3)]
 
@@ -91,11 +92,11 @@ def test_get_bi_grams_from_file():
     """It returns bigram from test file."""
     file_handler = FileHandler(
         'input/test_search_listings.xlsx',
-        'Keyword'
+        column_name='Keyword'
         )
     grammer_from_list = Grammer(file_handler)
     result = grammer_from_list.get_ngrams(
-        n=2, top_n=1
+        n=2, top_n_results=1
     )
     assert result == [(('snacks', 'low'), 2)]
 
