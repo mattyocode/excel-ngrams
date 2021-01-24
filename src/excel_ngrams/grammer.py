@@ -38,7 +38,7 @@ class FileHandler:
     def write_df_to_file(self, df):
         path = self.get_destination_path()
         df.to_csv(f"{path}.csv")
-        return True
+        return path
 
 
 class Grammer:
@@ -96,7 +96,7 @@ class Grammer:
 
     def output_csv_file(self, df):
         try:
-            self.file_handler.write_df_to_file(df)
-            return True
+            path = self.file_handler.write_df_to_file(df)
+            return path
         except Exception as e:
             return f'Error: {e}'

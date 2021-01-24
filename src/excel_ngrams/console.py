@@ -32,10 +32,12 @@ def main(file_path, sheet_name, column_name, max_n):
         file_path=file_path,
         sheet_name=sheet_name,
         column_name=column_name)
+    click.echo("Reading file...")
     grammer = Grammer(read_file)
+    click.echo("Performing n-gram analysis...")
     n_gram_dataframe = grammer.ngram_range(max_n)
-    grammer.output_csv_file(n_gram_dataframe)
+    output_file_path = grammer.output_csv_file(n_gram_dataframe)
 
-    click.echo("CSV file written to same directory as input Excel.")
+    click.secho(f"CSV file written to {output_file_path}.", fg="green")
 
 
