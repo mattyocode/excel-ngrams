@@ -100,15 +100,3 @@ class Grammer:
             return True
         except Exception as e:
             return f'Error: {e}'
-
-if __name__ == "__main__":
-
-
-    file_path = "input/snacks_large_test.xlsx"
-    sheet_name = '0315'
-    column_name = "Keyword"
-    max_n = 4
-    read_file = FileHandler(file_path, sheet_name, column_name)
-    grammer = Grammer(read_file)
-    n_gram_dataframe = grammer.ngram_range(max_n)
-    grammer.output_csv_file(n_gram_dataframe)
