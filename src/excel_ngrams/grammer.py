@@ -76,8 +76,6 @@ class Grammer:
         return df
 
     def combine_dataframes(self, df_list):
-        # existing_df = existing_df.reset_index()
-        # new_df = new_df.reset_index()
         dfs = [df for df in df_list]
         print(pd.concat(dfs, axis=1))
         return pd.concat(dfs, axis=1)

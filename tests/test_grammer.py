@@ -1,4 +1,5 @@
-from unittest.mock import Mock, patch
+import builtins
+from unittest.mock import Mock, patch, call, mock_open
 from io import StringIO
 
 from freezegun import freeze_time
@@ -22,6 +23,8 @@ def mock_terms_to_cols(mocker):
 def mock_df_from_tuple_list(mocker):
     return mocker.patch("excel_ngrams.grammer.Grammer.df_from_tuple_list")
 
+
+#### File Handler tests ####
 
 @pytest.fixture
 def file_handler():
@@ -58,9 +61,17 @@ def test_write_to_file_path(file_handler):
         assert output == 'input/test_search_listings_20201122010203_n-grams'
 
 
-def test_writes_csv_file(file_handler):
-    pass
+@patch('excel_ngrams.grammer.FileHandler.get_destination_path',
+                                        return_value='test/destination/file_date_n-grams')
+@patch('builtins.open', new_callable=mock_open)
+def test_writes_df_to_correct_path(mock_open, mock_destination_path, file_handler):
+    empty_df = pd.DataFrame()
+    result = file_handler.write_df_to_file(empty_df)
+    assert result == 'test/destination/file_date_n-grams'
+    args, kwargs = mock_open.call_args
+    assert 'test/destination/file_date_n-grams.csv' in args
 
+#### Grammer tests ####
 
 def test_get_bi_grams_mocked(grammer_instance):
     grammer_instance.term_list = [

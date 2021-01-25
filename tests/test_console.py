@@ -3,7 +3,7 @@ import builtins
 from contextlib import contextmanager
 import os
 import tempfile
-from unittest.mock import MagicMock, Mock, mock_open, patch
+from unittest.mock import call, MagicMock, Mock, mock_open, patch
 
 import click
 import click.testing
@@ -33,15 +33,6 @@ def mock_grammer(mocker):
     return mocker.patch("excel_ngrams.console.Grammer")
 
 
-# @pytest.fixture
-# def fake_excel_file():
-#     """Fixture for creating fake excel file."""
-#     tmp = tempfile.NamedTemporaryFile('w+t')
-#     tmp.name = 'file.xlsx'
-#     yield tmp
-#     tmp.close()
-
-
 def test_file_mocking(runner):
     """It exits with a status code of zero."""
     with patch('builtins.open', mock_open(read_data="test")) as mock_file:
@@ -63,10 +54,6 @@ def test_main_succeeds(runner, mock_file_handler, mock_grammer):
             console.main, [f"--file-path=test.xlsx"]
             )
         assert result.exit_code == 0
-        mock_file_handler.assert_called_with(
-            file_path=f'test.xlsx',
-            sheet_name=0,
-            column_name='Keyword')
 
 
 def test_main_prints_status_updates(runner, mock_file_handler, mock_grammer):
@@ -80,21 +67,34 @@ def test_main_prints_status_updates(runner, mock_file_handler, mock_grammer):
         assert 'CSV file written to' in result.output
 
 
-# @patch('os.path.isfile')
-# def test_main_succeeds(mock_os_is_file, runner, mock_file_handler, mock_grammer):
-#     """It exits with a status code of zero."""
-#     mock_os_is_file.return_value = True
-#     with patch('builtins.open', mock_open(read_data="test")) as mock_file:
-#         result = runner.invoke(
-#             console.main, ["--file-path=input/test_search_listings.xlsx"]
-#             )
-#         print(result.exception)
-#         mock_file_handler.assert_called_with(file_path='path/fake.xlsx')
-#         assert result.exit_code == 0
+def test_main_calls_filehandler_specified_path(runner, mock_file_handler, mock_grammer):
+    with open('test.xlsx', 'w') as f:
+        f.write('test data')
+        result = runner.invoke(
+            console.main, [f"--file-path=test.xlsx"]
+            )
+        assert result.exit_code == 0
+        mock_file_handler.assert_called_with(
+            file_path=f'test.xlsx',
+            sheet_name=0,
+            column_name='Keyword')
 
 
-            # mock_grammer.ngram_range.return_value = "dataframe"
-            # mock_grammer.output_csv_file.return_value = "fake.xlsx"
-            # result = runner.invoke(console.main, ["--file-path=fake.xlsx"])
-            # print(result.exception)
-            # assert result.exit_code == 0
+def test_main_calls_grammer_with_file_handler_instance(runner, mock_file_handler, mock_grammer):
+    with open('test.xlsx', 'w') as f:
+        f.write('test data')
+        result = runner.invoke(
+            console.main, ["--file-path=test.xlsx"]
+            )
+        assert result.exit_code == 0
+        mock_grammer.assert_called_with(mock_file_handler())
+
+def test_main_calls_grammer_with_default_args(runner, mock_file_handler, mock_grammer):
+    with open('test.xlsx', 'w') as f:
+        f.write('test data')
+        result = runner.invoke(
+            console.main, ["--file-path=test.xlsx"]
+            )
+        assert result.exit_code == 0
+        instance = mock_grammer.return_value
+        assert instance.ngram_range.call_args == call(5, top_n_results=150)
