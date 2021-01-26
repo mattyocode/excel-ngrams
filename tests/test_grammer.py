@@ -2,6 +2,7 @@ import builtins
 from unittest.mock import Mock, patch, call, mock_open
 from io import StringIO
 
+import click
 from freezegun import freeze_time
 import pandas as pd
 import pytest
@@ -22,6 +23,10 @@ def mock_terms_to_cols(mocker):
 @pytest.fixture
 def mock_df_from_tuple_list(mocker):
     return mocker.patch("excel_ngrams.grammer.Grammer.df_from_tuple_list")
+
+@pytest.fixture
+def mock_file_handler(mocker):
+    return mocker.patch("excel_ngrams.grammer.FileHandler")
 
 
 #### File Handler tests ####
@@ -195,6 +200,21 @@ def test_ngram_range_3_gram(grammer_instance, mock_get_ngrams, mock_df_from_tupl
     output_df = grammer_instance.ngram_range(3)
     assert len(output_df.columns) == 4
     assert mock_get_ngrams.call_count == 2
+
+def test_grammer_returns_path_after_writing_file(mock_file_handler):
+    """It returns path with no exception is raised."""
+    mock_file_handler.write_df_to_file.return_value = 'fake/path/file.csv'
+    grammer_instance = Grammer(mock_file_handler)
+    output = grammer_instance.output_csv_file('df')
+    assert output == 'fake/path/file.csv'
+
+def test_grammer_handles_writing_file_errors(file_handler):
+    """It raises `ClickException` when writing file fails."""
+    grammer_instance = Grammer(file_handler)
+    file_handler.side_effect = Exception('boom!')
+    with pytest.raises(click.ClickException):
+        grammer_instance.output_csv_file('df')
+
 
 
 

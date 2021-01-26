@@ -2,6 +2,7 @@ import os
 import datetime
 import re
 
+import click
 import spacy
 import nltk
 import numpy as np
@@ -80,9 +81,9 @@ class Grammer:
         print(pd.concat(dfs, axis=1))
         return pd.concat(dfs, axis=1)
 
-    def ngram_range(self, max_n, top_n_results=150):
+    def ngram_range(self, max_n, start=2, top_n_results=150):
         df_list = []
-        for i in range(2, max_n + 1):
+        for i in range(start, max_n + 1):
             ngrams_list = self.get_ngrams(i, top_n_results)
             df = self.df_from_tuple_list(ngrams_list)
             df_list.append(df)
@@ -96,5 +97,6 @@ class Grammer:
         try:
             path = self.file_handler.write_df_to_file(df)
             return path
-        except Exception as e:
-            return f'Error: {e}'
+        except Exception as error:
+            err_message = str(error)
+            raise click.ClickException(err_message)
