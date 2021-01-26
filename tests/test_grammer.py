@@ -208,26 +208,12 @@ def test_grammer_returns_path_after_writing_file(mock_file_handler):
     output = grammer_instance.output_csv_file('df')
     assert output == 'fake/path/file.csv'
 
-def test_grammer_handles_writing_file_errors(file_handler):
+def test_grammer_handles_writing_file_errors(mock_file_handler):
     """It raises `ClickException` when writing file fails."""
-    grammer_instance = Grammer(file_handler)
-    file_handler.side_effect = Exception('boom!')
+    mock_file_handler.write_df_to_file.side_effect = Exception('boom!')
+    grammer_instance = Grammer(mock_file_handler)
     with pytest.raises(click.ClickException):
         grammer_instance.output_csv_file('df')
 
 
 
-
-# @pytest.mark.parametrize(
-#     "test_input,expected",
-#     [
-#         ({2: [(('snacks', 'low'), 2), (('other', 'stuff'), 1)]}, (2, 1)),
-#         ({2: [(('snacks', 'low'), 2), (('other', 'stuff'), 1)],
-#             3: [(('three', 'snacks', 'low'), 2), (('other', 'some', 'stuff'), 1)]}, (2, 2)),
-#         ({2: [(('snacks', 'low'), 2), (('other', 'stuff'), 1), (('one', 'more'), 1)],
-#             3: [(('three', 'snacks', 'low'), 2), (('other', 'some', 'stuff'), 1)]}, (3, 2)),
-#     ]
-# )
-# def test_ngrams_dict_to_dataframe(grammer_instance, test_input, expected):
-#     df = grammer_instance.df_from_dict(test_input)
-#     assert df.shape == expected
