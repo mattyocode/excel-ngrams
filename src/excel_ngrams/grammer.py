@@ -81,7 +81,7 @@ class Grammer:
         print(pd.concat(dfs, axis=1))
         return pd.concat(dfs, axis=1)
 
-    def ngram_range(self, max_n, n=2, top_n_results=150):
+    def ngram_range(self, max_n, n=1, top_n_results=150):
         df_list = []
         for i in range(n, max_n + 1):
             ngrams_list = self.get_ngrams(i, top_n_results)

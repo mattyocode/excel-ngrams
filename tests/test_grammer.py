@@ -203,8 +203,18 @@ def test_adds_to_existing_df_with_unbalanced_dfs(grammer_instance):
     df = grammer_instance.combine_dataframes([existing_df, new_df])
     assert df.shape == (3, 4)
 
+def test_ngram_range_single_word_only(grammer_instance, mock_get_ngrams, mock_df_from_tuple_list):
+    mock_df_from_tuple_list.return_value = pd.DataFrame(
+        {
+            "2 gram": ["snacks low", "low cal"],
+            "2 gram frequency": [2, 1],
+        }
+    )
+    output_df = grammer_instance.ngram_range(1)
+    assert len(output_df.columns) == 2
+    assert mock_get_ngrams.call_count == 1
 
-def test_ngram_range_2_gram_only(grammer_instance, mock_get_ngrams, mock_df_from_tuple_list):
+def test_ngram_range_2_gram(grammer_instance, mock_get_ngrams, mock_df_from_tuple_list):
     mock_df_from_tuple_list.return_value = pd.DataFrame(
         {
             "2 gram": ["snacks low", "low cal"],
@@ -212,11 +222,17 @@ def test_ngram_range_2_gram_only(grammer_instance, mock_get_ngrams, mock_df_from
         }
     )
     output_df = grammer_instance.ngram_range(2)
-    assert len(output_df.columns) == 2
-    assert mock_get_ngrams.call_count == 1
+    assert len(output_df.columns) == 4
+    assert mock_get_ngrams.call_count == 2
 
 def test_ngram_range_3_gram(grammer_instance, mock_get_ngrams, mock_df_from_tuple_list):
     dataframe_return_values = [pd.DataFrame(
+        {
+            "1 gram": ["low", "snacks"],
+            "1 gram frequency": [2, 1],
+        }
+        ),
+        pd.DataFrame(
         {
             "2 gram": ["snacks low", "low cal"],
             "2 gram frequency": [2, 1],
@@ -230,8 +246,8 @@ def test_ngram_range_3_gram(grammer_instance, mock_get_ngrams, mock_df_from_tupl
         )]
     mock_df_from_tuple_list.side_effect = dataframe_return_values
     output_df = grammer_instance.ngram_range(3)
-    assert len(output_df.columns) == 4
-    assert mock_get_ngrams.call_count == 2
+    assert len(output_df.columns) == 6
+    assert mock_get_ngrams.call_count == 3
 
 def test_grammer_returns_path_after_writing_file(mock_file_handler):
     """It returns path with no exception is raised."""
