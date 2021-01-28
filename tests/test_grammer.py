@@ -12,6 +12,26 @@ import excel_ngrams
 from excel_ngrams.grammer import FileHandler, Grammer
 
 
+#### Instance fixtures ####
+
+@pytest.fixture
+def file_handler():
+    file_handler = FileHandler(
+        'input/test_search_listings.xlsx',
+        column_name='Keyword'
+        )
+    return file_handler
+
+@pytest.fixture
+def grammer_instance():
+    file_handler_mock = Mock()
+    grammer_instance = Grammer(
+        file_handler_mock,
+        )
+    return grammer_instance
+
+#### Mock fixtures ####
+
 @pytest.fixture
 def mock_get_ngrams(mocker):
     return mocker.patch("excel_ngrams.grammer.Grammer.get_ngrams")
@@ -77,6 +97,18 @@ def test_writes_df_to_correct_path(mock_open, mock_destination_path, file_handle
     assert 'test/destination/file_date_n-grams.csv' in args
 
 #### Grammer tests ####
+
+def test_get_single_word_frequency(grammer_instance):
+    grammer_instance.term_list = [
+        'best thing', 
+        "it's the best thing ever",
+        'best day ever',
+        'not the best thing ever'
+        ]
+    result = grammer_instance.get_ngrams(
+        n=1, top_n_results=1
+    )
+    assert result == [(('best',), 4)]
 
 def test_get_bi_grams_mocked(grammer_instance):
     grammer_instance.term_list = [
