@@ -16,13 +16,45 @@ from excel_ngrams.grammer import FileHandler, Grammer
 
 #### Instance fixtures ####
 
+@pytest.fixture(scope="session")
+def excel_test_file():
+    excel_test_file = xlsxwriter.Workbook('test_doc.xlsx')
+    worksheet = excel_test_file.add_worksheet()
+    terms_column = (
+        'Keyword',
+        'diet snacks',
+        'keto snacks',
+        'low carb snacks',
+        'low calorie snacks',
+    )
+    row = 0
+    col = 0
+
+    for term in terms_column:
+        worksheet.write(row, col, term)
+        row += 1
+    excel_test_file.close()
+    
+    yield excel_test_file
+
+    os.remove('test_doc.xlsx')
+
 @pytest.fixture
-def file_handler():
+def file_handler(excel_test_file):
+    excel_test_file = excel_test_file
+
     file_handler = FileHandler(
+        'test_doc.xlsx',
+        )
+    return file_handler
+
+@pytest.fixture
+def file_handler_test_file():
+    file_handler_test_file = FileHandler(
         'input_for_tests/test_search_listings.xlsx',
         column_name='Keyword'
         )
-    return file_handler
+    return file_handler_test_file
 
 @pytest.fixture
 def grammer_instance():
@@ -55,7 +87,7 @@ def mock_file_handler(mocker):
 
 
 def test_gets_words_list_from_excel(file_handler):
-    """It returns terms as list from test Excel doc. """
+    """It returns terms as list from constructed test Excel doc. """
     result = file_handler.get_terms()
     assert type(result) == list
     assert result == [
@@ -65,15 +97,22 @@ def test_gets_words_list_from_excel(file_handler):
 
 
 def test_write_to_file_path_actual_doc(file_handler):
-    """It returns expected file path from test Excel doc."""
+    """It returns expected file path from constructed test Excel doc."""
     with freeze_time("2020-11-22 01:02:03"):
         output = file_handler.get_destination_path()
+        assert output == 'test_doc_20201122010203_n-grams'
+
+
+def test_write_to_file_path_actual_doc(file_handler_test_file):
+    """It returns expected file path from test Excel doc in input_for_tests/."""
+    with freeze_time("2020-11-22 01:02:03"):
+        output = file_handler_test_file.get_destination_path()
         assert output == 'input_for_tests/test_search_listings_20201122010203_n-grams'
 
 
 @patch.object(FileHandler, 'get_file_path')
 def test_write_to_file_path(mock_get_file_path, file_handler):
-    """It returns expected file path from test Excel doc."""
+    """It returns expected file path from constructed test Excel doc."""
     mock_get_file_path.return_value = 'test/test_path'
     with freeze_time("2020-11-22 01:02:03"):
         output = file_handler.get_destination_path()
