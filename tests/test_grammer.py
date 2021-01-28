@@ -1,4 +1,5 @@
 import builtins
+import os
 from unittest.mock import Mock, patch, call, mock_open
 from io import StringIO
 
@@ -7,6 +8,7 @@ from freezegun import freeze_time
 import pandas as pd
 import pytest
 from pytest_mock import MockFixture
+import xlsxwriter
 
 import excel_ngrams
 from excel_ngrams.grammer import FileHandler, Grammer
@@ -17,7 +19,7 @@ from excel_ngrams.grammer import FileHandler, Grammer
 @pytest.fixture
 def file_handler():
     file_handler = FileHandler(
-        'input/test_search_listings.xlsx',
+        'input_for_tests/test_search_listings.xlsx',
         column_name='Keyword'
         )
     return file_handler
@@ -51,39 +53,31 @@ def mock_file_handler(mocker):
 
 #### File Handler tests ####
 
-@pytest.fixture
-def file_handler():
-    file_handler = FileHandler(
-        'input/test_search_listings.xlsx',
-        column_name='Keyword'
-        )
-    return file_handler
-
-@pytest.fixture
-def grammer_instance():
-    file_handler_mock = Mock()
-    grammer_instance = Grammer(
-        file_handler_mock,
-        )
-    return grammer_instance
-
-
-def test_file_handler_gets_term_list_attribute(file_handler):
-    result = file_handler.get_terms()
-    assert type(result) == list
-
 
 def test_gets_words_list_from_excel(file_handler):
+    """It returns terms as list from test Excel doc. """
     result = file_handler.get_terms()
+    assert type(result) == list
     assert result == [
         'diet snacks', 'keto snacks', 
         'low carb snacks', 'low calorie snacks'
         ]
 
-def test_write_to_file_path(file_handler):
+
+def test_write_to_file_path_actual_doc(file_handler):
+    """It returns expected file path from test Excel doc."""
     with freeze_time("2020-11-22 01:02:03"):
         output = file_handler.get_destination_path()
-        assert output == 'input/test_search_listings_20201122010203_n-grams'
+        assert output == 'input_for_tests/test_search_listings_20201122010203_n-grams'
+
+
+@patch.object(FileHandler, 'get_file_path')
+def test_write_to_file_path(mock_get_file_path, file_handler):
+    """It returns expected file path from test Excel doc."""
+    mock_get_file_path.return_value = 'test/test_path'
+    with freeze_time("2020-11-22 01:02:03"):
+        output = file_handler.get_destination_path()
+        assert output == 'test/test_path_20201122010203_n-grams'
 
 
 @patch('excel_ngrams.grammer.FileHandler.get_destination_path',
@@ -92,6 +86,7 @@ def test_write_to_file_path(file_handler):
 def test_writes_df_to_correct_path(mock_open, mock_destination_path, file_handler):
     empty_df = pd.DataFrame()
     result = file_handler.write_df_to_file(empty_df)
+
     assert result == 'test/destination/file_date_n-grams'
     args, kwargs = mock_open.call_args
     assert 'test/destination/file_date_n-grams.csv' in args
@@ -136,12 +131,8 @@ def test_get_tri_grams(grammer_instance):
     assert result == [(('best', 'thing', 'ever'), 3)]
 
 
-def test_get_bi_grams_from_file():
+def test_get_bi_grams_from_file(file_handler):
     """It returns bigram from test file."""
-    file_handler = FileHandler(
-        'input/test_search_listings.xlsx',
-        column_name='Keyword'
-        )
     grammer_from_list = Grammer(file_handler)
     result = grammer_from_list.get_ngrams(
         n=2, top_n_results=1

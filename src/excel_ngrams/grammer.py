@@ -31,7 +31,8 @@ class FileHandler:
         return self.file_path
 
     def get_destination_path(self):
-        file_name = os.path.splitext(self.file_path)[0]
+        file_path = self.get_file_path()
+        file_name = os.path.splitext(file_path)[0] 
         now = datetime.datetime.now()
         date_time = now.strftime("%Y%m%d%H%M%S")
         return f"{file_name}_{date_time}_n-grams"
