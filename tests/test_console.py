@@ -88,3 +88,19 @@ def test_main_calls_grammer_with_default_args(runner, mock_file_handler, mock_gr
     assert result.exit_code == 0
     instance = mock_grammer.return_value
     assert instance.ngram_range.call_args == call(5, top_n_results=150)
+
+
+def test_main_fails_on_non_existent_path(runner):
+    # mock_file_handler.side_effect = Exception("Problemo!")
+    result = runner.invoke(
+        console.main, ["--file-path=doesnt_exist.xlsx"]
+        )
+    assert result.exit_code == 2
+
+
+def test_main_fails_prints_error_on_non_existent_path(runner):
+    # mock_file_handler.side_effect = Exception("Problemo!")
+    result = runner.invoke(
+        console.main, ["--file-path=doesnt_exist.xlsx"]
+        )
+    assert "Error: Invalid value" in result.output
