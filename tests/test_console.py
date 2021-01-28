@@ -91,7 +91,6 @@ def test_main_calls_grammer_with_default_args(runner, mock_file_handler, mock_gr
 
 
 def test_main_fails_on_non_existent_path(runner):
-    # mock_file_handler.side_effect = Exception("Problemo!")
     result = runner.invoke(
         console.main, ["--file-path=doesnt_exist.xlsx"]
         )
@@ -99,8 +98,15 @@ def test_main_fails_on_non_existent_path(runner):
 
 
 def test_main_fails_prints_error_on_non_existent_path(runner):
-    # mock_file_handler.side_effect = Exception("Problemo!")
     result = runner.invoke(
         console.main, ["--file-path=doesnt_exist.xlsx"]
         )
     assert "Error: Invalid value" in result.output
+
+
+def test_main_fails_on_grammer_error(runner, mock_file_handler, mock_grammer, fake_excel_file):
+    mock_grammer.side_effect = Exception("Problemo!")
+    result = runner.invoke(
+        console.main, ["--file-path=test.xlsx"]
+        )
+    assert result.exit_code == 1
