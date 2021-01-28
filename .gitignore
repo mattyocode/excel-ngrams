@@ -1,5 +1,8 @@
 # Project specific
 input/
+input_for_tests/
+.flake8
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
