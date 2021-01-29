@@ -59,6 +59,7 @@ def lint(session: Session) -> None:
         "flake8-bandit",
         "flake8-black",
         "flake8-bugbear",
+        "flake8-docstrings",
         "flake8-import-order",
     )
     session.run("flake8", *args)
@@ -66,7 +67,7 @@ def lint(session: Session) -> None:
 
 @nox.session(python=["3.9", "3.8", "3.7"])
 def mypy(session: Session) -> None:
-    """"Type-check using mypy."""
+    """Type-check using mypy."""
     args = session.posargs or locations
     install_with_constraints(session, "mypy")
     session.run("mypy", *args)

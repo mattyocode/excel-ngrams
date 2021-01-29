@@ -1,4 +1,4 @@
-"""Module to get ngram values from Excel document."""
+"""Client to get ngram values from Excel document."""
 import datetime
 import os
 from typing import Tuple, Union
@@ -13,8 +13,7 @@ nlp = spacy.load("en_core_web_sm")
 
 
 class FileHandler:
-    """
-    Class to handle reading, data extraction, and writing to files.
+    """Class to handle reading, data extraction, and writing to files.
 
     Attributes:
         file_path(str): The path to Excel file to be read.
@@ -31,6 +30,7 @@ class FileHandler:
         sheet_name: Union[int, str] = 0,
         column_name: str = "Keyword",
     ) -> None:
+        """Constructs attributes for FileHandler object."""
         self.file_path = file_path
         self.sheet_name = sheet_name
         self.column_name = column_name
@@ -58,7 +58,7 @@ class FileHandler:
         return df[self.column_name].tolist()
 
     def get_terms(self) -> list:
-        """list: Getter method returns terms_list."""
+        """:obj:`list` of :obj:`str`: Getter method returns terms_list."""
         return self.term_list
 
     def get_file_path(self) -> str:
@@ -105,12 +105,12 @@ class Grammer:
 
     Attributes:
         file_handler(:obj:`FileHandler`): FileHandler obj with input file path.
-        file_path(str): Path from FileHandler attribute.
         term_list: Term list from FileHandler attribute.
 
     """
 
     def __init__(self, file_handler: FileHandler) -> None:
+        """Constructs attributes for Grammer object from FileHandler object."""
         self.file_handler = file_handler
         self.term_list = file_handler.get_terms()
 

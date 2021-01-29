@@ -1,3 +1,4 @@
+"""Tests cases for the grammer module."""
 import os
 from unittest.mock import Mock, mock_open, patch
 
@@ -50,8 +51,11 @@ def file_handler(excel_test_file: xlsxwriter.Workbook) -> FileHandler:
 
 @pytest.fixture
 def file_handler_test_file() -> FileHandler:
-    """Fixture returns FileHandler constructed
-    from test xlsx file in input_for_tests directory."""
+    """Fixture returns FileHandler instance.
+
+    FileHandler is constructed from test xlsx file
+    in input_for_tests directory.
+    """
     file_handler_test_file = FileHandler(
         "input_for_tests/test_search_listings.xlsx", column_name="Keyword"
     )
@@ -97,7 +101,7 @@ def mock_file_handler(mocker: MockFixture) -> Mock:
 
 
 def test_gets_words_list_from_excel(file_handler: FileHandler) -> None:
-    """It returns terms as list from constructed test Excel doc. """
+    """It returns terms as list from constructed test Excel doc."""
     result = file_handler.get_terms()
     assert type(result) == list
     assert result == [
@@ -109,8 +113,7 @@ def test_gets_words_list_from_excel(file_handler: FileHandler) -> None:
 
 
 def test_write_to_file_path_actual_doc(file_handler_test_file: FileHandler) -> None:
-    """It returns expected file path from
-    test Excel doc in input_for_tests."""
+    """It returns expected file path from test Excel doc in input_for_tests."""
     with freeze_time("2020-11-22 01:02:03"):
         output = file_handler_test_file.get_destination_path()
         expected = "input_for_tests/test_search_listings_20201122010203_n-grams"
