@@ -55,6 +55,9 @@ def file_handler_test_file() -> FileHandler:
 
     FileHandler is constructed from test xlsx file
     in input_for_tests directory.
+
+    Returns:
+        :obj:`FileHandler`: Instantiated with actual Excel doc.
     """
     file_handler_test_file = FileHandler(
         "input_for_tests/test_search_listings.xlsx", column_name="Keyword"

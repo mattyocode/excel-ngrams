@@ -88,6 +88,10 @@ class FileHandler:
         Gets path from get_destination_path method and uses
         Pandas to_csv function to write DataFrame to csv file.
 
+        Args:
+            df(pd.DataFrame): Dataframe of terms and values columns
+                for ngrams.
+
         Returns:
             str: Path to which csv file was written.
         """
@@ -144,7 +148,8 @@ class Grammer:
         """Returns term/value tuples as two lists.
 
         Args:
-            tuple_list(:obj:`list` of :obj:`tuple`[:obj:`list` of :obj:`str`, int]):
+            tuple_list(list): List comprising :obj:`list` of
+                :obj:`tuple`[:obj:`list` of :obj:`str`, int]
                 Results from get_ngrams.
 
         Returns:
@@ -163,9 +168,9 @@ class Grammer:
         """Creates DataFrame from lists of terms and values as tuple.
 
         Args:
-            tuple[:obj:`list` of :obj:`str`, :obj:`list` of :obj:`int`]:
-                Results of terms_to_colums - two lists to comprise
-                terms and value columns in DataFrame.
+            tuple_list(list): List comprised of [:obj:`list` of :obj:`str`,
+                :obj:`list` of :obj:`int`]. Results of terms_to_colums: two
+                lists to comprise terms and value columns in DataFrame.
 
         Returns:
             df(pd.DataFrame): Pandas DataFrame comprising a column of
@@ -189,8 +194,8 @@ class Grammer:
         and values, etc.
 
         Args:
-            df_list(:obj:`list` of :obj:`pd.DataFrames`): List containing
-            the dataframes to be merged, side by side.
+            df_list(list): List of :obj:`pd.DataFrames` containing
+                the dataframes to be merged, side by side.
 
         Returns:
             pd.DataFrame: Single combined dataframe from list of dataframes.
