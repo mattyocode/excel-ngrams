@@ -56,9 +56,7 @@ def file_handler_test_file():
 @pytest.fixture
 def grammer_instance():
     file_handler_mock = Mock()
-    grammer_instance = Grammer(
-        file_handler_mock,
-    )
+    grammer_instance = Grammer(file_handler_mock)
     return grammer_instance
 
 
@@ -193,10 +191,7 @@ def test_tuple_list_to_dataframe(grammer_instance, mock_terms_to_cols):
 
 def test_adds_to_existing_df(grammer_instance):
     existing_df = pd.DataFrame(
-        {
-            "2 gram": ["snacks low", "low cal"],
-            "2 gram frequency": [2, 1],
-        }
+        {"2 gram": ["snacks low", "low cal"], "2 gram frequency": [2, 1]}
     )
     new_df = pd.DataFrame(
         {
@@ -210,10 +205,7 @@ def test_adds_to_existing_df(grammer_instance):
 
 def test_adds_to_existing_df_with_unbalanced_dfs(grammer_instance):
     existing_df = pd.DataFrame(
-        {
-            "2 gram": ["snacks low", "low cal"],
-            "2 gram frequency": [2, 1],
-        }
+        {"2 gram": ["snacks low", "low cal"], "2 gram frequency": [2, 1]}
     )
     new_df = pd.DataFrame(
         {
@@ -229,10 +221,7 @@ def test_ngram_range_single_word_only(
     grammer_instance, mock_get_ngrams, mock_df_from_tuple_list
 ):
     mock_df_from_tuple_list.return_value = pd.DataFrame(
-        {
-            "2 gram": ["snacks low", "low cal"],
-            "2 gram frequency": [2, 1],
-        }
+        {"2 gram": ["snacks low", "low cal"], "2 gram frequency": [2, 1]}
     )
     output_df = grammer_instance.ngram_range(1)
     assert len(output_df.columns) == 2
@@ -241,10 +230,7 @@ def test_ngram_range_single_word_only(
 
 def test_ngram_range_2_gram(grammer_instance, mock_get_ngrams, mock_df_from_tuple_list):
     mock_df_from_tuple_list.return_value = pd.DataFrame(
-        {
-            "2 gram": ["snacks low", "low cal"],
-            "2 gram frequency": [2, 1],
-        }
+        {"2 gram": ["snacks low", "low cal"], "2 gram frequency": [2, 1]}
     )
     output_df = grammer_instance.ngram_range(2)
     assert len(output_df.columns) == 4
@@ -253,23 +239,10 @@ def test_ngram_range_2_gram(grammer_instance, mock_get_ngrams, mock_df_from_tupl
 
 def test_ngram_range_3_gram(grammer_instance, mock_get_ngrams, mock_df_from_tuple_list):
     dataframe_return_values = [
+        pd.DataFrame({"1 gram": ["low", "snacks"], "1 gram frequency": [2, 1]}),
+        pd.DataFrame({"2 gram": ["snacks low", "low cal"], "2 gram frequency": [2, 1]}),
         pd.DataFrame(
-            {
-                "1 gram": ["low", "snacks"],
-                "1 gram frequency": [2, 1],
-            }
-        ),
-        pd.DataFrame(
-            {
-                "2 gram": ["snacks low", "low cal"],
-                "2 gram frequency": [2, 1],
-            }
-        ),
-        pd.DataFrame(
-            {
-                "3 gram": ["big snacks low", "low cal time"],
-                "3 gram frequency": [7, 3],
-            }
+            {"3 gram": ["big snacks low", "low cal time"], "3 gram frequency": [7, 3]}
         ),
     ]
     mock_df_from_tuple_list.side_effect = dataframe_return_values

@@ -1,8 +1,12 @@
-import nox
+import re
 import tempfile
+
+import nox
+
 
 nox.options.sessions = "lint", "safety", "tests"
 locations = "src", "tests", "noxfile.py"
+package = "excel_ngrams"
 
 
 def install_with_constraints(session, *args, **kwargs):
@@ -12,10 +16,24 @@ def install_with_constraints(session, *args, **kwargs):
             "export",
             "--dev",
             "--format=requirements.txt",
+            "--without-hashes",
             f"--output={requirements.name}",
             external=True,
         )
+
+        with open(f"{requirements.name}", "r") as full_file:
+            lines = full_file.readlines()
+        with open(f"{requirements.name}", "w") as new_file:
+            for line in lines:
+                if "en-core-web" in line.strip("\n"):
+                    spacy_model = line.strip()
+                else:
+                    new_file.write(line)
+
+        spacy_model_url = re.findall("(https.*)", spacy_model)[0]
+
         session.install(f"--constraint={requirements.name}", *args, **kwargs)
+        session.install(f"{spacy_model_url}")
 
 
 @nox.session(python=["3.9", "3.8", "3.7"])
@@ -63,7 +81,3 @@ def safety(session):
         )
         install_with_constraints(session, "safety")
         session.run("safety", "check", f"--file={requirements.name}", "--full-report")
-
-
-
-
