@@ -4,7 +4,7 @@ import tempfile
 import nox
 
 
-nox.options.sessions = "lint", "safety", "tests"
+nox.options.sessions = "lint", "mypy", "pytype", "tests"
 locations = "src", "tests", "noxfile.py"
 package = "excel_ngrams"
 
@@ -37,16 +37,6 @@ def install_with_constraints(session, *args, **kwargs):
 
 
 @nox.session(python=["3.9", "3.8", "3.7"])
-def tests(session):
-    args = session.posargs or ["--cov"]
-    session.run("poetry", "install", "--no-dev", external=True)
-    install_with_constraints(
-        session, "coverage[toml]", "pytest", "pytest-cov", "pytest-mock"
-    )
-    session.run("pytest", *args)
-
-
-@nox.session(python=["3.9", "3.8", "3.7"])
 def black(session):
     args = session.posargs or locations
     install_with_constraints(session, "black")
@@ -68,6 +58,21 @@ def lint(session):
 
 
 @nox.session(python=["3.9", "3.8", "3.7"])
+def mypy(session):
+    args = session.posargs or locations
+    install_with_constraints(session, "mypy")
+    session.run("mypy", *args)
+
+
+@nox.session(python=["3.8", "3.7"])
+def pytype(session):
+    """Run the static type checker."""
+    args = session.posargs or ["--disable=import-error", *locations]
+    install_with_constraints(session, "pytype")
+    session.run("pytype", *args)
+
+
+@nox.session(python=["3.9", "3.8", "3.7"])
 def safety(session):
     with tempfile.NamedTemporaryFile() as requirements:
         session.run(
@@ -81,3 +86,13 @@ def safety(session):
         )
         install_with_constraints(session, "safety")
         session.run("safety", "check", f"--file={requirements.name}", "--full-report")
+
+
+@nox.session(python=["3.9", "3.8", "3.7"])
+def tests(session):
+    args = session.posargs or ["--cov"]
+    session.run("poetry", "install", "--no-dev", external=True)
+    install_with_constraints(
+        session, "coverage[toml]", "pytest", "pytest-cov", "pytest-mock"
+    )
+    session.run("pytest", *args)
