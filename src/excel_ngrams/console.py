@@ -1,3 +1,4 @@
+"""Command-line interface."""
 import click
 
 from . import __version__
@@ -11,8 +12,10 @@ from .grammer import FileHandler, Grammer
 @click.option("--max-n", "-m", default=5, show_default=True)
 @click.option("--top-results", "-t", default=150, show_default=True)
 @click.version_option(version=__version__)
-def main(file_path, sheet_name, column_name, max_n, top_results):
-    """Excel n-grams project."""
+def main(
+    file_path: str, sheet_name: str, column_name: str, max_n: int, top_results: int
+) -> None:
+    """Excel n-grams project CLI interface."""
     read_file = FileHandler(
         file_path=file_path, sheet_name=sheet_name, column_name=column_name
     )

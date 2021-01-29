@@ -5,6 +5,7 @@ import click
 from freezegun import freeze_time
 import pandas as pd
 import pytest
+from pytest_mock import MockFixture
 import xlsxwriter
 
 from excel_ngrams.grammer import FileHandler, Grammer
@@ -14,7 +15,8 @@ from excel_ngrams.grammer import FileHandler, Grammer
 
 
 @pytest.fixture(scope="session")
-def excel_test_file():
+def excel_test_file() -> xlsxwriter.Workbook:
+    """Helper function to create simple xlsx file for testing."""
     excel_test_file = xlsxwriter.Workbook("test_doc.xlsx")
     worksheet = excel_test_file.add_worksheet()
     terms_column = (
@@ -38,7 +40,8 @@ def excel_test_file():
 
 
 @pytest.fixture
-def file_handler(excel_test_file):
+def file_handler(excel_test_file: xlsxwriter.Workbook) -> FileHandler:
+    """Fixture returns FileHandler instance."""
     excel_test_file = excel_test_file
 
     file_handler = FileHandler("test_doc.xlsx")
@@ -46,7 +49,9 @@ def file_handler(excel_test_file):
 
 
 @pytest.fixture
-def file_handler_test_file():
+def file_handler_test_file() -> FileHandler:
+    """Fixture returns FileHandler constructed
+    from test xlsx file in input_for_tests directory."""
     file_handler_test_file = FileHandler(
         "input_for_tests/test_search_listings.xlsx", column_name="Keyword"
     )
@@ -54,7 +59,8 @@ def file_handler_test_file():
 
 
 @pytest.fixture
-def grammer_instance():
+def grammer_instance() -> Grammer:
+    """Fixture returns Grammer instance."""
     file_handler_mock = Mock()
     grammer_instance = Grammer(file_handler_mock)
     return grammer_instance
@@ -64,29 +70,33 @@ def grammer_instance():
 
 
 @pytest.fixture
-def mock_get_ngrams(mocker):
+def mock_get_ngrams(mocker: MockFixture) -> Mock:
+    """Fixture to patch Grammer.get_ngrams."""
     return mocker.patch("excel_ngrams.grammer.Grammer.get_ngrams")
 
 
 @pytest.fixture
-def mock_terms_to_cols(mocker):
+def mock_terms_to_cols(mocker: MockFixture) -> Mock:
+    """Fixture to patch Grammer.terms_to_columns."""
     return mocker.patch("excel_ngrams.grammer.Grammer.terms_to_columns")
 
 
 @pytest.fixture
-def mock_df_from_tuple_list(mocker):
-    return mocker.patch("excel_ngrams.grammer.Grammer.df_from_tuple_list")
+def mock_df_from_terms(mocker: MockFixture) -> Mock:
+    """Fixture to patch Grammer.df_from_terms."""
+    return mocker.patch("excel_ngrams.grammer.Grammer.df_from_terms")
 
 
 @pytest.fixture
-def mock_file_handler(mocker):
+def mock_file_handler(mocker: MockFixture) -> Mock:
+    """Fixture to patch FileHandler passed to Grammer constructor."""
     return mocker.patch("excel_ngrams.grammer.FileHandler")
 
 
 # ------- File Handler tests -------
 
 
-def test_gets_words_list_from_excel(file_handler):
+def test_gets_words_list_from_excel(file_handler: FileHandler) -> None:
     """It returns terms as list from constructed test Excel doc. """
     result = file_handler.get_terms()
     assert type(result) == list
@@ -98,7 +108,7 @@ def test_gets_words_list_from_excel(file_handler):
     ]
 
 
-def test_write_to_file_path_actual_doc(file_handler_test_file):
+def test_write_to_file_path_actual_doc(file_handler_test_file: FileHandler) -> None:
     """It returns expected file path from
     test Excel doc in input_for_tests."""
     with freeze_time("2020-11-22 01:02:03"):
@@ -108,7 +118,9 @@ def test_write_to_file_path_actual_doc(file_handler_test_file):
 
 
 @patch.object(FileHandler, "get_file_path")
-def test_write_to_file_path(mock_get_file_path, file_handler):
+def test_write_to_file_path(
+    mock_get_file_path: Mock, file_handler: FileHandler
+) -> None:
     """It returns expected file path from constructed test Excel doc."""
     mock_get_file_path.return_value = "test/test_path"
     with freeze_time("2020-11-22 01:02:03"):
@@ -121,7 +133,10 @@ def test_write_to_file_path(mock_get_file_path, file_handler):
     return_value="test/destination/file_date_n-grams",
 )
 @patch("builtins.open", new_callable=mock_open)
-def test_writes_df_to_correct_path(mock_open, mock_destination_path, file_handler):
+def test_writes_df_to_correct_path(
+    mock_open: Mock, mock_destination_path: Mock, file_handler: FileHandler
+) -> None:
+    """It returns expected path for writing csv to."""
     empty_df = pd.DataFrame()
     result = file_handler.write_df_to_file(empty_df)
 
@@ -133,7 +148,8 @@ def test_writes_df_to_correct_path(mock_open, mock_destination_path, file_handle
 # ------- Grammer tests -------
 
 
-def test_get_single_word_frequency(grammer_instance):
+def test_get_single_word_frequency(grammer_instance: Grammer) -> None:
+    """It returns most frequent term with value."""
     grammer_instance.term_list = [
         "best thing",
         "it's the best thing ever",
@@ -144,7 +160,8 @@ def test_get_single_word_frequency(grammer_instance):
     assert result == [(("best",), 4)]
 
 
-def test_get_bi_grams_mocked(grammer_instance):
+def test_get_bi_grams_mocked(grammer_instance: Grammer) -> None:
+    """It returns most frequent bigram with value."""
     grammer_instance.term_list = [
         "best thing",
         "it's the best thing ever",
@@ -155,7 +172,8 @@ def test_get_bi_grams_mocked(grammer_instance):
     assert result == [(("best", "thing"), 3)]
 
 
-def test_get_tri_grams(grammer_instance):
+def test_get_tri_grams(grammer_instance: Grammer) -> None:
+    """It returns most frequent trigram with value."""
     grammer_instance.term_list = [
         "best thing ever",
         "it's the best thing ever",
@@ -166,14 +184,15 @@ def test_get_tri_grams(grammer_instance):
     assert result == [(("best", "thing", "ever"), 3)]
 
 
-def test_get_bi_grams_from_file(file_handler):
-    """It returns bigram from test file."""
-    grammer_from_list = Grammer(file_handler)
-    result = grammer_from_list.get_ngrams(n=2, top_n_results=1)
+def test_get_bi_grams_from_file(file_handler_test_file: FileHandler) -> None:
+    """It returns most frequent bigram and value from test file in directory."""
+    grammer = Grammer(file_handler_test_file)
+    result = grammer.get_ngrams(n=2, top_n_results=1)
     assert result == [(("snacks", "low"), 2)]
 
 
-def test_terms_to_columns(grammer_instance):
+def test_terms_to_columns(grammer_instance: Grammer) -> None:
+    """It outputs a list of concatinated terms and a list of values."""
     tuple_list = [(("snacks", "low"), 2), (("low", "calorie"), 1)]
     output = grammer_instance.terms_to_columns(tuple_list)
     output_terms, output_values = output
@@ -181,15 +200,19 @@ def test_terms_to_columns(grammer_instance):
     assert output_values == [2, 1]
 
 
-def test_tuple_list_to_dataframe(grammer_instance, mock_terms_to_cols):
+def test_tuple_list_to_dataframe(
+    grammer_instance: Grammer, mock_terms_to_cols: Mock
+) -> None:
+    """It returns Pandas dataframe from tuple list."""
     mock_terms_to_cols.return_value = ["snacks low", "low calorie"], [2, 1]
     test_tuple_list = [(("test", "thing"), 3)]
-    df = grammer_instance.df_from_tuple_list(test_tuple_list)
+    df = grammer_instance.df_from_terms(test_tuple_list)
     assert df.shape == (2, 2)
     assert df["2-gram"][0] == "snacks low"
 
 
-def test_adds_to_existing_df(grammer_instance):
+def test_adds_to_existing_df(grammer_instance: Grammer) -> None:
+    """It combines two dataframes into one."""
     existing_df = pd.DataFrame(
         {"2 gram": ["snacks low", "low cal"], "2 gram frequency": [2, 1]}
     )
@@ -203,7 +226,8 @@ def test_adds_to_existing_df(grammer_instance):
     assert df.shape == (2, 4)
 
 
-def test_adds_to_existing_df_with_unbalanced_dfs(grammer_instance):
+def test_adds_to_existing_df_with_unbalanced_dfs(grammer_instance: Grammer) -> None:
+    """It combines two dataframes, adding NaN when later dataframe has more rows."""
     existing_df = pd.DataFrame(
         {"2 gram": ["snacks low", "low cal"], "2 gram frequency": [2, 1]}
     )
@@ -218,9 +242,10 @@ def test_adds_to_existing_df_with_unbalanced_dfs(grammer_instance):
 
 
 def test_ngram_range_single_word_only(
-    grammer_instance, mock_get_ngrams, mock_df_from_tuple_list
-):
-    mock_df_from_tuple_list.return_value = pd.DataFrame(
+    grammer_instance: Grammer, mock_get_ngrams: Mock, mock_df_from_terms: Mock
+) -> None:
+    """It returns dataframe of single word ngrams with values."""
+    mock_df_from_terms.return_value = pd.DataFrame(
         {"2 gram": ["snacks low", "low cal"], "2 gram frequency": [2, 1]}
     )
     output_df = grammer_instance.ngram_range(1)
@@ -228,8 +253,11 @@ def test_ngram_range_single_word_only(
     assert mock_get_ngrams.call_count == 1
 
 
-def test_ngram_range_2_gram(grammer_instance, mock_get_ngrams, mock_df_from_tuple_list):
-    mock_df_from_tuple_list.return_value = pd.DataFrame(
+def test_ngram_range_2_gram(
+    grammer_instance: Grammer, mock_get_ngrams: Mock, mock_df_from_terms: Mock
+) -> None:
+    """It returns dataframe of single word ngrams and bigrams with values."""
+    mock_df_from_terms.return_value = pd.DataFrame(
         {"2 gram": ["snacks low", "low cal"], "2 gram frequency": [2, 1]}
     )
     output_df = grammer_instance.ngram_range(2)
@@ -237,7 +265,10 @@ def test_ngram_range_2_gram(grammer_instance, mock_get_ngrams, mock_df_from_tupl
     assert mock_get_ngrams.call_count == 2
 
 
-def test_ngram_range_3_gram(grammer_instance, mock_get_ngrams, mock_df_from_tuple_list):
+def test_ngram_range_3_gram(
+    grammer_instance: Grammer, mock_get_ngrams: Mock, mock_df_from_terms: Mock
+) -> None:
+    """It returns dataframe with 1-3grams and their values."""
     dataframe_return_values = [
         pd.DataFrame({"1 gram": ["low", "snacks"], "1 gram frequency": [2, 1]}),
         pd.DataFrame({"2 gram": ["snacks low", "low cal"], "2 gram frequency": [2, 1]}),
@@ -245,13 +276,13 @@ def test_ngram_range_3_gram(grammer_instance, mock_get_ngrams, mock_df_from_tupl
             {"3 gram": ["big snacks low", "low cal time"], "3 gram frequency": [7, 3]}
         ),
     ]
-    mock_df_from_tuple_list.side_effect = dataframe_return_values
+    mock_df_from_terms.side_effect = dataframe_return_values
     output_df = grammer_instance.ngram_range(3)
     assert len(output_df.columns) == 6
     assert mock_get_ngrams.call_count == 3
 
 
-def test_grammer_returns_path_after_writing_file(mock_file_handler):
+def test_grammer_returns_path_after_writing_file(mock_file_handler: Mock) -> None:
     """It returns path with no exception is raised."""
     mock_file_handler.write_df_to_file.return_value = "fake/path/file.csv"
     grammer_instance = Grammer(mock_file_handler)
@@ -259,7 +290,7 @@ def test_grammer_returns_path_after_writing_file(mock_file_handler):
     assert output == "fake/path/file.csv"
 
 
-def test_grammer_handles_writing_file_errors(mock_file_handler):
+def test_grammer_handles_writing_file_errors(mock_file_handler: Mock) -> None:
     """It raises `ClickException` when writing file fails."""
     mock_file_handler.write_df_to_file.side_effect = Exception("boom!")
     grammer_instance = Grammer(mock_file_handler)
