@@ -1,5 +1,7 @@
 [![Tests](https://github.com/mattyocode/excel-ngrams/workflows/Tests/badge.svg)](https://github.com/mattyocode/excel-ngrams/actions?workflow=Tests)
 
+[![codecov](https://codecov.io/gh/mattyocode/excel-ngrams/branch/main/graph/badge.svg?token=0621CKX30T)](https://codecov.io/gh/mattyocode/excel-ngrams)
+
 # The Excel Ngrams Project
 
 A project to analyse a column of text in an Excel document and

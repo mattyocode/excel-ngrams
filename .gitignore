@@ -3,7 +3,6 @@ input/
 input_for_tests/
 .flake8
 mypy.ini
-.github
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
