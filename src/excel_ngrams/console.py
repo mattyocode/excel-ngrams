@@ -10,7 +10,7 @@ from .grammer import FileHandler, Grammer
 @click.option("--sheet-name", "-s", default=0, type=str, show_default=True)
 @click.option("--column-name", "-c", default="Keyword", type=str, show_default=True)
 @click.option("--max-n", "-m", default=5, show_default=True)
-@click.option("--top-results", "-t", default=150, show_default=True)
+@click.option("--top-results", "-t", default=250, show_default=True)
 @click.version_option(version=__version__)
 def main(
     file_path: str, sheet_name: str, column_name: str, max_n: int, top_results: int

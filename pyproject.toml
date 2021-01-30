@@ -2,7 +2,7 @@
 name = "excel-ngrams"
 version = "0.1.0"
 description = "An app to output n-grams from column in Excel spreadsheet"
-authors = ["mattyocode <matthewoliver@live.co.uk>"]
+authors = ["Matthew Oliver <matthewoliver@live.co.uk>"]
 repository = "https://github.com/mattyocode/excel-ngrams"
 keywords = ["Excel", "n-grams"]
 packages = [
@@ -37,6 +37,8 @@ typeguard = "^2.10.0"
 flake8-annotations = "^2.5.0"
 flake8-docstrings = "^1.5.0"
 darglint = "^1.5.8"
+Sphinx = "^3.4.3"
+sphinx-autodoc-typehints = "^1.11.1"
 
 [tool.coverage.paths]
 source = ["src", "*/site-packages"]

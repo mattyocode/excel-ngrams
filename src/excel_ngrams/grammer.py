@@ -118,7 +118,7 @@ class Grammer:
         self.file_handler = file_handler
         self.term_list = file_handler.get_terms()
 
-    def get_ngrams(self, n: int, top_n_results: int = 150) -> list:
+    def get_ngrams(self, n: int, top_n_results: int = 250) -> list:
         """Create tuple with terms and frequency from list.
 
         List of terms is tokenised using Spacy's NLP pipe, set to lowercase
@@ -139,45 +139,45 @@ class Grammer:
             for token in doc:
                 word = token.text.lower()
                 word_list.append(word)
-        n_grams_series = (pd.Series(nltk.ngrams(word_list, n)).value_counts())[
-            :top_n_results
-        ]
+        n_grams_series = pd.Series(nltk.ngrams(word_list, n)).value_counts()
+        if top_n_results <= len(n_grams_series):
+            n_grams_series = n_grams_series[:top_n_results]
         return list(zip(n_grams_series.index, n_grams_series))
 
-    def terms_to_columns(self, tuple_list: list) -> Tuple[str, int]:
+    def terms_to_columns(self, ngram_tuples: list) -> Tuple[str, int]:
         """Returns term/value tuples as two lists.
 
         Args:
-            tuple_list(list): List comprising :obj:`list` of
-                :obj:`tuple`[:obj:`list` of :obj:`str`, int]
-                Results from get_ngrams.
+            ngram_tuples(list): :obj:`list` of :obj:`tuple`[:obj:`tuple`
+                of :obj:`str`, int]. Results from get_ngrams.
 
         Returns:
-            term_col(:obj:`list` of :obj:`str`): Terms, concatinated into single string
-                for multi-word terms, returned as list.
+            term_col(:obj:`list` of :obj:`str`): Terms, concatinated into
+                single string for multi-word terms, returned as list.
             value_col(:obj:`list` of :obj:`int`): Term frequencies as list.
             Lists are returned together as tuple containing both lists.
 
         """
-        term_col, value_col = zip(*tuple_list)
+        term_col, value_col = zip(*ngram_tuples)
         term_col = [" ".join(term) for term in term_col]
         value_col = list(value_col)
         return term_col, value_col
 
-    def df_from_terms(self, tuple_list: list) -> pd.DataFrame:
+    def df_from_terms(self, ngram_tuples: list) -> pd.DataFrame:
         """Creates DataFrame from lists of terms and values as tuple.
 
+        Calls terms_to_columns on ngram_tuple to unpack them.
+
         Args:
-            tuple_list(list): List comprised of [:obj:`list` of :obj:`str`,
-                :obj:`list` of :obj:`int`]. Results of terms_to_colums: two
-                lists to comprise terms and value columns in DataFrame.
+            ngram_tuples(list): :obj:`list` of :obj:`tuple`[:obj:`tuple`
+                of :obj:`str`, int]. Results from get_ngrams.
 
         Returns:
             df(pd.DataFrame): Pandas DataFrame comprising a column of
                 terms and a column of frequency values for those terms.
 
         """
-        term_col, value_col = self.terms_to_columns(tuple_list)
+        term_col, value_col = self.terms_to_columns(ngram_tuples)
         ngram_val = len(term_col[0].split())
         terms_header = f"{ngram_val}-gram"
         freq_header = f"{ngram_val}-gram frequency"
@@ -185,7 +185,7 @@ class Grammer:
         df = pd.DataFrame(dict_, columns=[terms_header, freq_header])
         return df
 
-    def combine_dataframes(self, df_list: list) -> pd.DataFrame:
+    def combine_dataframes(self, dataframes: list) -> pd.DataFrame:
         """Creates single multi-column dataframe.
 
         Takes the terms and frequency values for dataframes constructed
@@ -194,19 +194,19 @@ class Grammer:
         and values, etc.
 
         Args:
-            df_list(list): List of :obj:`pd.DataFrames` containing
+            dataframes(list): List of :obj:`pd.DataFrames` containing
                 the dataframes to be merged, side by side.
 
         Returns:
             pd.DataFrame: Single combined dataframe from list of dataframes.
 
         """
-        dfs = [df for df in df_list]
+        dfs = [df for df in dataframes]
         print(pd.concat(dfs, axis=1))
         return pd.concat(dfs, axis=1)
 
     def ngram_range(
-        self, max_n: int, n: int = 1, top_n_results: int = 150
+        self, max_n: int, n: int = 1, top_n_results: int = 250
     ) -> pd.DataFrame:
         """Gets ngram terms and outputs for a range of phrase lengths.
 
