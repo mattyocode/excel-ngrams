@@ -1,6 +1,6 @@
 """Test cases for the console module."""
 import os
-from typing import TextIO, Generator
+from typing import Generator, TextIO
 from unittest.mock import call, Mock
 
 import click

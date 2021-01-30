@@ -1,7 +1,7 @@
 """Client to get ngram values from Excel document."""
 import datetime
 import os
-from typing import Tuple, Union
+from typing import Any, Tuple, Union
 
 import click
 import nltk
@@ -144,7 +144,7 @@ class Grammer:
             n_grams_series = n_grams_series[:top_n_results]
         return list(zip(n_grams_series.index, n_grams_series))
 
-    def terms_to_columns(self, ngram_tuples: list) -> Tuple[str, int]:
+    def terms_to_columns(self, ngram_tuples: list) -> Tuple[Any, list]:
         """Returns term/value tuples as two lists.
 
         Args:
