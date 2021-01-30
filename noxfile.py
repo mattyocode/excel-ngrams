@@ -33,6 +33,7 @@ def install_with_constraints(session: Session, *args: str, **kwargs: Any) -> Non
                     spacy_model = line.strip()
                 else:
                     new_file.write(line)
+                    print(line)
 
         spacy_model_url = re.findall("(https.*)", spacy_model)[0]
 
