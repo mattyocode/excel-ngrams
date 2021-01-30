@@ -33,7 +33,6 @@ def install_with_constraints(session: Session, *args: str, **kwargs: Any) -> Non
                     spacy_model = line.strip()
                 elif "freezegun" in line.strip("\n"):
                     freezegun = line.strip()
-                    print(freezegun)
                 else:
                     new_file.write(line)
 

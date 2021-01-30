@@ -1,6 +1,6 @@
 """Test cases for the console module."""
 import os
-from typing import TextIO
+from typing import TextIO, Generator
 from unittest.mock import call, Mock
 
 import click
@@ -31,7 +31,7 @@ def mock_grammer(mocker: MockFixture) -> Mock:
 
 
 @pytest.fixture(scope="session")
-def fake_excel_file() -> TextIO:
+def fake_excel_file() -> Generator[TextIO, None, None]:
     """It returns an empty TextIO file with xlsx extension."""
     with open("test.xlsx", "w") as f:
         yield f
