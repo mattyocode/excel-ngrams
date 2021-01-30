@@ -166,6 +166,18 @@ def test_get_single_word_frequency(grammer_instance: Grammer) -> None:
     assert result == [(("best",), 4)]
 
 
+def test_top_results_over_series_length(grammer_instance: Grammer) -> None:
+    """It returns all results when top_n_results exceeds results available."""
+    grammer_instance.term_list = [
+        "best thing",
+        "it's the best thing ever",
+        "best day ever",
+        "not the best thing ever",
+    ]
+    result = grammer_instance.get_ngrams(n=1, top_n_results=100)
+    assert len(result) == 8
+
+
 def test_get_bi_grams_mocked(grammer_instance: Grammer) -> None:
     """It returns most frequent bigram with value."""
     grammer_instance.term_list = [

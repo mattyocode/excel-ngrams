@@ -31,14 +31,17 @@ def install_with_constraints(session: Session, *args: str, **kwargs: Any) -> Non
             for line in lines:
                 if "en-core-web" in line.strip("\n"):
                     spacy_model = line.strip()
+                elif "freezegun" in line.strip("\n"):
+                    freezegun = line.strip()
+                    print(freezegun)
                 else:
                     new_file.write(line)
-                    print(line)
 
         spacy_model_url = re.findall("(https.*)", spacy_model)[0]
 
         session.install(f"--constraint={requirements.name}", *args, **kwargs)
         session.install(f"{spacy_model_url}")
+        session.install(f"{freezegun}")
 
 
 @nox.session(python="3.9")
