@@ -49,6 +49,7 @@ def file_handler(excel_test_file: xlsxwriter.Workbook) -> FileHandler:
     return file_handler
 
 
+@pytest.mark.e2e
 @pytest.fixture
 def file_handler_test_file() -> FileHandler:
     """Fixture returns FileHandler instance.
@@ -115,6 +116,13 @@ def test_gets_words_list_from_excel(file_handler: FileHandler) -> None:
     ]
 
 
+def test_get_file_path(file_handler: FileHandler) -> None:
+    """It gets file path from class attribute."""
+    result = file_handler.get_file_path()
+    assert result == "test_doc.xlsx"
+
+
+@pytest.mark.e2e
 def test_write_to_file_path_actual_doc(file_handler_test_file: FileHandler) -> None:
     """It returns expected file path from test Excel doc in input_for_tests."""
     with freeze_time("2020-11-22 01:02:03"):
@@ -202,6 +210,7 @@ def test_get_tri_grams(grammer_instance: Grammer) -> None:
     assert result == [(("best", "thing", "ever"), 3)]
 
 
+@pytest.mark.e2e
 def test_get_bi_grams_from_file(file_handler_test_file: FileHandler) -> None:
     """It returns most frequent bigram and value from test file in directory."""
     grammer = Grammer(file_handler_test_file)
