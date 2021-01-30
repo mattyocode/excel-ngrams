@@ -1,8 +1,6 @@
 # Project specific
 input/
 input_for_tests/
-.flake8
-mypy.ini
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

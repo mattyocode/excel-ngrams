@@ -1,0 +1,9 @@
+[flake8]
+select = ANN,B,B9,BLK,C,D,DAR,E,F,I,S,W
+ignore = ANN101,E203,E501,W503
+max-line-length = 80
+max_complexity = 10
+application-import-names = excel_ngrams,tests
+docstring-convention = google
+import-order-style = google
+per-file-ignores = tests/*:S101
