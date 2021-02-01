@@ -1,6 +1,7 @@
 # Project specific
 input/
 input_for_tests/
+usage.gif
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

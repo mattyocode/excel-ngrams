@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "excel-ngrams"
-version = "0.1.1"
+version = "0.1.2"
 description = "An app to output n-grams from column in Excel spreadsheet"
 authors = ["Matthew Oliver <matthewoliver@live.co.uk>"]
 repository = "https://github.com/mattyocode/excel-ngrams"
