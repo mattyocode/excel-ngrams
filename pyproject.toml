@@ -8,6 +8,8 @@ keywords = ["Excel", "n-grams"]
 packages = [
     { include = "excel_ngrams", from = "src" },
 ]
+readme = "README.md"
+
 
 [tool.poetry.scripts]
 excel-ngrams = "excel_ngrams.console:main"
