@@ -10,7 +10,8 @@ A project to analyse a column of text in an Excel document and
 return a CSV file with the most common ngrams from that text. Output
 file is returned to the same directory as the input file. You can
 choose the maximum n-gram length, and maximum number of results (rows)
-returned.
+returned. The app defaults to looking for a column named 'Keyword' but
+any column name can be passed in as an argument.
 
 
 Words are tokenised with Spacy and ngrams are generated with NLTK.
