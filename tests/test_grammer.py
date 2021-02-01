@@ -49,7 +49,6 @@ def file_handler(excel_test_file: xlsxwriter.Workbook) -> FileHandler:
     return file_handler
 
 
-@pytest.mark.e2e
 @pytest.fixture
 def file_handler_test_file() -> FileHandler:
     """Fixture returns FileHandler instance.
