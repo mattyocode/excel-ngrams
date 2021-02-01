@@ -43,10 +43,12 @@ source = ["src", "*/site-packages"]
 
 [tool.coverage.run]
 branch = false
+parallel = true
 source = ["excel_ngrams"]
 
 [tool.coverage.report]
 show_missing = true
+fail_under = 95
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
