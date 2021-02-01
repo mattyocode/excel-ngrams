@@ -1,15 +1,12 @@
 """Client to get ngram values from Excel document."""
 import datetime
 import os
-from typing import Any, Tuple, Union
+from typing import Any, List, Sequence, Tuple, Union
 
 import click
 import nltk
 import pandas as pd
 import spacy
-
-
-nlp = spacy.load("en_core_web_sm")
 
 
 class FileHandler:
@@ -57,7 +54,7 @@ class FileHandler:
         df = pd.read_excel(file_path, sheet_name=sheet_name)
         return df[self.column_name].tolist()
 
-    def get_terms(self) -> list:
+    def get_terms(self) -> List[str]:
         """:obj:`list` of :obj:`str`: Getter method returns terms_list."""
         return self.term_list
 
@@ -111,14 +108,36 @@ class Grammer:
         file_handler(:obj:`FileHandler`): FileHandler obj with input file path.
         term_list: Term list from FileHandler attribute.
 
+    _nlp is shared across all instances, but is loaded by the constructor
+    to avoid loading is in cases where it isn't needed.
+
     """
+
+    _nlp = None
 
     def __init__(self, file_handler: FileHandler) -> None:
         """Constructs attributes for Grammer object from FileHandler object."""
         self.file_handler = file_handler
         self.term_list = file_handler.get_terms()
 
-    def get_ngrams(self, n: int, top_n_results: int = 250) -> list:
+        if Grammer._nlp is None:
+            try:
+                Grammer._nlp = spacy.load("en")
+            except OSError:
+                from spacy.cli import download
+
+                print(
+                    "Downloading language model for the spaCy\n"
+                    "(don't worry, this will only happen once)"
+                )
+                download("en")
+                Grammer._nlp = spacy.load("en")
+        else:
+            print(Grammer._nlp)
+
+    def get_ngrams(
+        self, n: int, top_n_results: int = 250
+    ) -> Sequence[Tuple[Tuple[Any, ...], int]]:
         """Create tuple with terms and frequency from list.
 
         List of terms is tokenised using Spacy's NLP pipe, set to lowercase
@@ -130,12 +149,12 @@ class Grammer:
                 Default is set to 150.
 
         Returns:
-            :obj:`list` of :obj:`tuple`[`list` of str, int]: List of tuples
+            :obj:`list` of :obj:`tuple`[:obj:`tuple`[str, ...], int]: List of tuples
                 containing term(s) and values.
 
         """
         word_list = []
-        for doc in list(nlp.pipe(self.term_list)):
+        for doc in list(Grammer._nlp.pipe(self.term_list)):
             for token in doc:
                 word = token.text.lower()
                 word_list.append(word)
@@ -144,12 +163,14 @@ class Grammer:
             n_grams_series = n_grams_series[:top_n_results]
         return list(zip(n_grams_series.index, n_grams_series))
 
-    def terms_to_columns(self, ngram_tuples: list) -> Tuple[Any, list]:
+    def terms_to_columns(
+        self, ngram_tuples: Sequence[Tuple[Tuple[Any, ...], int]]
+    ) -> Tuple[List[str], List[int]]:
         """Returns term/value tuples as two lists.
 
         Args:
             ngram_tuples(list): :obj:`list` of :obj:`tuple`[:obj:`tuple`
-                of :obj:`str`, int]. Results from get_ngrams.
+                [str], int]. Results from get_ngrams.
 
         Returns:
             term_col(:obj:`list` of :obj:`str`): Terms, concatinated into
@@ -158,19 +179,23 @@ class Grammer:
             Lists are returned together as tuple containing both lists.
 
         """
+        term_col: Tuple[str, ...]
+        value_col: Tuple[Any, ...]
         term_col, value_col = zip(*ngram_tuples)
-        term_col = [" ".join(term) for term in term_col]
-        value_col = list(value_col)
-        return term_col, value_col
+        term_col_list: List[str] = [" ".join(term) for term in term_col]
+        value_col_list: List[int] = list(value_col)
+        return term_col_list, value_col_list
 
-    def df_from_terms(self, ngram_tuples: list) -> pd.DataFrame:
+    def df_from_terms(
+        self, ngram_tuples: Sequence[Tuple[Tuple[Any, ...], int]]
+    ) -> pd.DataFrame:
         """Creates DataFrame from lists of terms and values as tuple.
 
         Calls terms_to_columns on ngram_tuple to unpack them.
 
         Args:
             ngram_tuples(list): :obj:`list` of :obj:`tuple`[:obj:`tuple`
-                of :obj:`str`, int]. Results from get_ngrams.
+                [str], int]. Results from get_ngrams.
 
         Returns:
             df(pd.DataFrame): Pandas DataFrame comprising a column of
@@ -185,7 +210,7 @@ class Grammer:
         df = pd.DataFrame(dict_, columns=[terms_header, freq_header])
         return df
 
-    def combine_dataframes(self, dataframes: list) -> pd.DataFrame:
+    def combine_dataframes(self, dataframes: List[pd.DataFrame]) -> pd.DataFrame:
         """Creates single multi-column dataframe.
 
         Takes the terms and frequency values for dataframes constructed

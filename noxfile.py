@@ -1,5 +1,4 @@
 """Nox sessions for testing and linting."""
-import re
 import tempfile
 from typing import Any
 
@@ -29,17 +28,12 @@ def install_with_constraints(session: Session, *args: str, **kwargs: Any) -> Non
             lines = full_file.readlines()
         with open(f"{requirements.name}", "w") as new_file:
             for line in lines:
-                if "en-core-web" in line.strip("\n"):
-                    spacy_model = line.strip()
-                elif "freezegun" in line.strip("\n"):
+                if "freezegun" in line.strip("\n"):
                     freezegun = line.strip()
                 else:
                     new_file.write(line)
 
-        spacy_model_url = re.findall("(https.*)", spacy_model)[0]
-
         session.install(f"--constraint={requirements.name}", *args, **kwargs)
-        session.install(f"{spacy_model_url}")
         session.install(f"{freezegun}")
 
 

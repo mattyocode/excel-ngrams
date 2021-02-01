@@ -101,6 +101,18 @@ def mock_file_handler(mocker: MockFixture) -> Mock:
     return mocker.patch("excel_ngrams.grammer.FileHandler")
 
 
+@pytest.fixture
+def mock_spacy_load(mocker: MockFixture) -> Mock:
+    """Fixture to patch Spacy.load."""
+    return mocker.patch("spacy.load", side_effect=OSError)
+
+
+@pytest.fixture
+def mock_spacy_download(mocker: MockFixture) -> Mock:
+    """Fixture to patch OS system."""
+    return mocker.patch("spacy.cli.download")
+
+
 # ------- File Handler tests -------
 
 
@@ -160,6 +172,17 @@ def test_writes_df_to_correct_path(
 
 
 # ------- Grammer tests -------
+
+
+def test_downloads_spacy_model_if_not_present(
+    mock_spacy_load: Mock, mock_spacy_download: Mock, mock_file_handler: Mock
+) -> None:
+    """It calls os.system with correct command."""
+    with patch("excel_ngrams.grammer.Grammer._nlp", new=None):
+        mock_spacy_load.side_effect = [OSError, Mock()]
+        grammer = Grammer(mock_file_handler)
+        mock_spacy_download.assert_called_with("en")
+        assert grammer._nlp is not None
 
 
 def test_get_single_word_frequency(grammer_instance: Grammer) -> None:

@@ -21,5 +21,3 @@ run this command in your terminal:
 
 
 $ pip install excel-ngrams
-
-$ python3 excel-ngrams [OPTIONS]
