@@ -2,6 +2,8 @@
 
 [![codecov](https://codecov.io/gh/mattyocode/excel-ngrams/branch/main/graph/badge.svg?token=0621CKX30T)](https://codecov.io/gh/mattyocode/excel-ngrams)
 
+[![PyPI](https://img.shields.io/pypi/v/excel-ngrams.svg)](https://pypi.org/project/excel-ngrams/)
+
 # The Excel Ngrams Project
 
 A project to analyse a column of text in an Excel document and
