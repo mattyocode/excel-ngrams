@@ -42,7 +42,7 @@ codecov = "^2.1.11"
 source = ["src", "*/site-packages"]
 
 [tool.coverage.run]
-branch = true
+branch = false
 source = ["excel_ngrams"]
 
 [tool.coverage.report]
