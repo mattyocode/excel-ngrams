@@ -1,7 +1,12 @@
 # Project specific
 input/
 input_for_tests/
-usage.gif
+.flake8
+.darglint
+.pre-commit-config.yaml
+.readthedocs.yml
+.pytype
+.github/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

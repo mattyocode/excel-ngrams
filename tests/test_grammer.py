@@ -108,8 +108,14 @@ def mock_spacy_load(mocker: MockFixture) -> Mock:
 
 @pytest.fixture
 def mock_spacy_download(mocker: MockFixture) -> Mock:
-    """Fixture to patch OS system."""
+    """Fixture to patch Spacy.download."""
     return mocker.patch("spacy.cli.download")
+
+
+@pytest.fixture
+def mock_nltk_download(mocker: MockFixture) -> Mock:
+    """Fixture to patch nltk.download."""
+    return mocker.patch("nltk.download")
 
 
 # ------- File Handler tests -------
@@ -131,15 +137,6 @@ def test_get_file_path(file_handler: FileHandler) -> None:
     """It gets file path from class attribute."""
     result = file_handler.get_file_path()
     assert result == "test_doc.xlsx"
-
-
-@pytest.mark.e2e
-def test_write_to_file_path_actual_doc(file_handler_test_file: FileHandler) -> None:
-    """It returns expected file path from test Excel doc in input_for_tests."""
-    with freeze_time("2020-11-22 01:02:03"):
-        output = file_handler_test_file.get_destination_path()
-        expected = "input_for_tests/test_search_listings_20201122010203_n-grams"
-        assert output == expected
 
 
 @patch.object(FileHandler, "get_file_path")
@@ -170,13 +167,44 @@ def test_writes_df_to_correct_path(
     assert "test/destination/file_date_n-grams.csv" in args
 
 
+@pytest.mark.e2e
+def test_write_to_file_path_actual_doc(file_handler_test_file: FileHandler) -> None:
+    """It returns expected file path from test Excel doc in input_for_tests."""
+    with freeze_time("2020-11-22 01:02:03"):
+        output = file_handler_test_file.get_destination_path()
+        expected = "input_for_tests/test_search_listings_20201122010203_n-grams"
+        assert output == expected
+
+
 # ------- Grammer tests -------
+
+
+def test_downloads_nltk_stopwords_if_not_present(
+    mock_nltk_download: Mock, mock_file_handler: Mock
+) -> None:
+    """It calls os.system with correct command."""
+    with patch("excel_ngrams.grammer.Grammer._stopwords", new=None):
+        grammer = Grammer(mock_file_handler)
+        mock_nltk_download.assert_called_with("stopwords")
+        assert grammer._stopwords is not None
+
+
+def test_loads_spacy_model_if_present(
+    mock_spacy_load: Mock, mock_spacy_download: Mock, mock_file_handler: Mock
+) -> None:
+    """It calls spacy.load without calling download."""
+    with patch("excel_ngrams.grammer.Grammer._nlp", new=None):
+        mock_spacy_load.side_effect = Mock()
+        grammer = Grammer(mock_file_handler)
+        mock_spacy_load.assert_called_once_with("en")
+        mock_spacy_download.assert_not_called
+        assert grammer._nlp is not None
 
 
 def test_downloads_spacy_model_if_not_present(
     mock_spacy_load: Mock, mock_spacy_download: Mock, mock_file_handler: Mock
 ) -> None:
-    """It calls os.system with correct command."""
+    """It calls spacy.download with correct command."""
     with patch("excel_ngrams.grammer.Grammer._nlp", new=None):
         mock_spacy_load.side_effect = [OSError, Mock()]
         grammer = Grammer(mock_file_handler)

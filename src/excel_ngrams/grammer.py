@@ -108,12 +108,13 @@ class Grammer:
         file_handler(:obj:`FileHandler`): FileHandler obj with input file path.
         term_list: Term list from FileHandler attribute.
 
-    _nlp is shared across all instances, but is loaded by the constructor
-    to avoid loading is in cases where it isn't needed.
+    _nlp and _stopwords are shared across all instances, but is loaded by the
+    constructor to avoid loading is in cases where it isn't needed.
 
     """
 
     _nlp = None
+    _stopwords = None
 
     def __init__(self, file_handler: FileHandler) -> None:
         """Constructs attributes for Grammer object from FileHandler object."""
@@ -132,8 +133,12 @@ class Grammer:
                 )
                 download("en")
                 Grammer._nlp = spacy.load("en")
-        else:
-            print(Grammer._nlp)
+
+        if Grammer._stopwords is None:
+            try:
+                Grammer._stopwords = nltk.download("stopwords")
+            except Exception:
+                print("Stopwords may not be correctly loaded")
 
     def get_ngrams(
         self, n: int, top_n_results: int = 250
