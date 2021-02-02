@@ -5,6 +5,7 @@ from typing import Any, List, Sequence, Tuple, Union
 
 import click
 import nltk
+from nltk.corpus import stopwords
 import pandas as pd
 import spacy
 
@@ -136,9 +137,23 @@ class Grammer:
 
         if Grammer._stopwords is None:
             try:
-                Grammer._stopwords = nltk.download("stopwords")
+                nltk.download("stopwords")
+                Grammer._stopwords = set(stopwords.words("english"))
             except Exception:
                 print("Stopwords may not be correctly loaded")
+
+    def in_stop_words(self, spacy_token_text: str) -> bool:
+        """Check if word appears in stopword set.
+
+        Args:
+            spacy_token_text(str): The text attribute of the Spacy
+                token being passed to the method.
+
+        Returns:
+            bool: Whether text is present in stopwords or not.
+
+        """
+        return spacy_token_text.lower() in Grammer._stopwords
 
     def get_ngrams(
         self, n: int, top_n_results: int = 250

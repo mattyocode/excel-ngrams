@@ -118,6 +118,12 @@ def mock_nltk_download(mocker: MockFixture) -> Mock:
     return mocker.patch("nltk.download")
 
 
+@pytest.fixture
+def mock_nltk_stopwords(mocker: MockFixture) -> Mock:
+    """Fixture to patch nltk.stopwords.words."""
+    return mocker.patch("nltk.corpus.stopwords.words")
+
+
 # ------- File Handler tests -------
 
 
@@ -180,10 +186,11 @@ def test_write_to_file_path_actual_doc(file_handler_test_file: FileHandler) -> N
 
 
 def test_downloads_nltk_stopwords_if_not_present(
-    mock_nltk_download: Mock, mock_file_handler: Mock
+    mock_nltk_download: Mock, mock_file_handler: Mock, mock_nltk_stopwords: Mock
 ) -> None:
     """It calls os.system with correct command."""
     with patch("excel_ngrams.grammer.Grammer._stopwords", new=None):
+        mock_nltk_stopwords.return_value = "fake_stopwords"
         grammer = Grammer(mock_file_handler)
         mock_nltk_download.assert_called_with("stopwords")
         assert grammer._stopwords is not None
@@ -210,6 +217,18 @@ def test_downloads_spacy_model_if_not_present(
         grammer = Grammer(mock_file_handler)
         mock_spacy_download.assert_called_with("en")
         assert grammer._nlp is not None
+
+
+@pytest.mark.parametrize(
+    "test_word,expected",
+    [("to", True), ("of", True), ("by", True), ("unicorn", False), (",", False)],
+)
+def test_if_in_nltk_stopwords(
+    test_word: str, expected: bool, grammer_instance: Grammer
+) -> None:
+    """It returns bool according to presence in NLTK stopwords."""
+    actual = grammer_instance.in_stop_words(test_word)
+    assert actual == expected
 
 
 def test_get_single_word_frequency(grammer_instance: Grammer) -> None:
