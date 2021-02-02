@@ -33,4 +33,4 @@ run this command in your terminal:
 $ pip install excel-ngrams
 
 
-![Excel-ngrams-usage](http://i.imgur.com/t90rv0Hh.gif)
+![Excel-ngrams-usage](https://media.giphy.com/media/L3QRuhyMhdgUWNtwFp/giphy.gif)
