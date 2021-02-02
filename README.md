@@ -33,4 +33,4 @@ run this command in your terminal:
 $ pip install excel-ngrams
 
 
-![](usage.gif)
+<blockquote class="imgur-embed-pub" lang="en" data-id="a/aHsW8jv" data-context="false" ><a href="//imgur.com/a/aHsW8jv">EN Usage</a></blockquote><script async src="//s.imgur.com/min/embed.js" charset="utf-8"></script>
