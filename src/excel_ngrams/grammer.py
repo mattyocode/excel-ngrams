@@ -138,8 +138,8 @@ class Grammer:
         if Grammer._stopwords is None:
             try:
                 Grammer._stopwords = set(stopwords.words("english"))
-            except Exception:
-                print("Stopwords may not be loaded correctly")
+            except Exception as e:
+                print(f"Error: {e}")
 
     def in_stop_words(self, spacy_token_text: str) -> bool:
         """Check if word appears in stopword set.
