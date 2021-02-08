@@ -9,7 +9,7 @@ packages = [
     { include = "excel_ngrams", from = "src" },
 ]
 readme = "README.md"
-
+documentation = "https://excel-ngrams.readthedocs.io"
 
 [tool.poetry.scripts]
 excel-ngrams = "excel_ngrams.console:main"

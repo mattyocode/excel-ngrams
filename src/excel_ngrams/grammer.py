@@ -5,6 +5,7 @@ from typing import Any, List, Sequence, Tuple, Union
 
 import click
 import nltk
+from nltk.corpus import stopwords
 import pandas as pd
 import spacy
 
@@ -114,6 +115,7 @@ class Grammer:
     """
 
     _nlp = None
+    _stopwords = None
 
     def __init__(self, file_handler: FileHandler) -> None:
         """Constructs attributes for Grammer object from FileHandler object."""
@@ -132,6 +134,38 @@ class Grammer:
                 )
                 download("en")
                 Grammer._nlp = spacy.load("en")
+
+        if Grammer._stopwords is None:
+            try:
+                Grammer._stopwords = set(stopwords.words("english"))
+            except Exception:
+                print("Stopwords may not be loaded correctly")
+
+    def in_stop_words(self, spacy_token_text: str) -> bool:
+        """Check if word appears in stopword set.
+
+        Args:
+            spacy_token_text(str): The text attribute of the Spacy
+                token being passed to the method.
+
+        Returns:
+            bool: Whether text is present in stopwords.
+
+        """
+        return spacy_token_text.lower() in Grammer._stopwords
+
+    # def is_punctuation(self, spacy_token: spacy.tokens) -> bool:
+    #     """Check if Spacy token is punctuation.
+
+    #     Args:
+    #         spacy_token(spacy.tokens): The token with assocation POS
+    #             categorisation.
+
+    #     Returns:
+    #         bool: Whether token is punctuation.
+
+    #     """
+    #     return spacy_token.is_punct()
 
     def get_ngrams(
         self, n: int, top_n_results: int = 250
@@ -155,7 +189,8 @@ class Grammer:
         for doc in list(Grammer._nlp.pipe(self.term_list)):
             for token in doc:
                 word = token.text.lower()
-                word_list.append(word)
+                if not self.in_stop_words(word) and not token.is_punct:
+                    word_list.append(word)
         n_grams_series = pd.Series(nltk.ngrams(word_list, n)).value_counts()
         if top_n_results <= len(n_grams_series):
             n_grams_series = n_grams_series[:top_n_results]

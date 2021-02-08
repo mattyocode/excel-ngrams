@@ -208,6 +208,42 @@ def test_downloads_spacy_model_if_not_present(
         assert grammer._nlp is not None
 
 
+def test_downloads_nltk_stopwords_if_not_present(
+    mock_nltk_download: Mock, mock_file_handler: Mock, mock_nltk_stopwords: Mock
+) -> None:
+    """It calls os.system with correct command."""
+    with patch("excel_ngrams.grammer.Grammer._stopwords", new=None):
+        mock_nltk_stopwords.return_value = "fake_stopwords"
+        grammer = Grammer(mock_file_handler)
+        mock_nltk_stopwords.assert_called_with("english")
+        assert grammer._stopwords is not None
+
+
+@pytest.mark.parametrize(
+    "test_word,expected",
+    [("to", True), ("of", True), ("by", True), ("unicorn", False), (",", False)],
+)
+def test_if_in_nltk_stopwords(
+    test_word: str, expected: bool, grammer_instance: Grammer
+) -> None:
+    """It returns bool according to presence in NLTK stopwords."""
+    actual = grammer_instance.in_stop_words(test_word)
+    assert actual == expected
+
+
+# @pytest.mark.parametrize(
+#     "test_word,expected",
+#     [("'", True), (",", True), ("by", False), ("unicorn", False), (".", True)],
+# )
+# def test_get_ngrams_removes_punctuation(
+#     test_word: str,
+#     expected: bool,
+#     grammer_instance: Grammer) -> None:
+#     """It returns doesn't return punctuation."""
+#     actual = grammer_instance.is_punctuation(test_word)
+#     assert actual == expected
+
+
 def test_get_single_word_frequency(grammer_instance: Grammer) -> None:
     """It returns most frequent term with value."""
     grammer_instance.term_list = [
@@ -220,7 +256,21 @@ def test_get_single_word_frequency(grammer_instance: Grammer) -> None:
     assert result == [(("best",), 4)]
 
 
-def test_top_results_over_series_length(grammer_instance: Grammer) -> None:
+def test_get_ngrams_excludes_puncuation(grammer_instance: Grammer) -> None:
+    """It returns most frequent term with value."""
+    grammer_instance.term_list = [
+        "best, thing",
+        "it's 'the' best, thing, ever",
+        "best ! day ! ever!",
+        "not, the? best thing ever",
+    ]
+    result = grammer_instance.get_ngrams(n=1, top_n_results=100)
+    punctuation = [",", "'", "!", "?"]
+    unpacked_tuple_results = [k[0] for k, v in result]
+    assert [i for i in punctuation if i in unpacked_tuple_results] == []
+
+
+def test_top_results_exceeds_results_available(grammer_instance: Grammer) -> None:
     """It returns all results when top_n_results exceeds results available."""
     grammer_instance.term_list = [
         "best thing",
@@ -229,7 +279,7 @@ def test_top_results_over_series_length(grammer_instance: Grammer) -> None:
         "not the best thing ever",
     ]
     result = grammer_instance.get_ngrams(n=1, top_n_results=100)
-    assert len(result) == 8
+    assert len(result) == 5
 
 
 def test_get_bi_grams_mocked(grammer_instance: Grammer) -> None:
