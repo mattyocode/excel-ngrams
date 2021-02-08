@@ -137,6 +137,7 @@ class Grammer:
 
         if Grammer._stopwords is None:
             try:
+                nltk.download("stopwords")
                 Grammer._stopwords = set(stopwords.words("english"))
             except Exception as e:
                 print(f"Error: {e}")
