@@ -70,6 +70,11 @@ Excel Ngram's usage looks like:
     The number of rows of results to return. By default, this is 250
     or all of the results if there are fewer than 250.
 
+.. option:: -w <boolean>, --stopwords <boolean>
+
+    Remove stopwords from ngram analysis - true of false. By default,
+    this is set to true.
+
 .. option:: --version
 
     Display the version and exit.
