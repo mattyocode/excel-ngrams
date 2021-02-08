@@ -1,6 +1,7 @@
 """Client to get ngram values from Excel document."""
 import datetime
 import os
+import re
 from typing import Any, List, Sequence, Tuple, Union
 
 import click
@@ -155,21 +156,28 @@ class Grammer:
         """
         return spacy_token_text.lower() in Grammer._stopwords
 
-    # def is_punctuation(self, spacy_token: spacy.tokens) -> bool:
-    #     """Check if Spacy token is punctuation.
+    def remove_escaped_chars(self, text: List[str]) -> List[str]:
+        """Remove newline and tab chars from string list.
 
-    #     Args:
-    #         spacy_token(spacy.tokens): The token with assocation POS
-    #             categorisation.
+        Args:
+            text(:obj:`List` of :obj:`str`): Terms list to be cleaned of
+                specific chars.
 
-    #     Returns:
-    #         bool: Whether token is punctuation.
+        Returns:
+            without_newlines(:obj:`List` of :obj:`str`): Terms list without
+                specific chars.
 
-    #     """
-    #     return spacy_token.is_punct()
+        """
+        without_newlines = []
+        for item in text:
+            item = re.sub(r"(\n*\t*)", "", item.strip())
+            item = re.sub(r"’", "'", item)
+            if item != "":
+                without_newlines.append(item)
+        return without_newlines
 
     def get_ngrams(
-        self, n: int, top_n_results: int = 250
+        self, n: int, top_n_results: int = 250, stopwords: bool = True
     ) -> Sequence[Tuple[Tuple[Any, ...], int]]:
         """Create tuple with terms and frequency from list.
 
@@ -179,19 +187,23 @@ class Grammer:
         Args:
             n(int): The length of phrases to analyse.
             top_n_results(int): The number of results to return.
-                Default is set to 150.
+                Default is 150.
+            stopwords(bool): flag to indicate removal of stopwords.
+                Default is True.
 
         Returns:
-            :obj:`list` of :obj:`tuple`[:obj:`tuple`[str, ...], int]: List of tuples
-                containing term(s) and values.
+            :obj:`list` of :obj:`tuple`[:obj:`tuple`[str, ...], int]:
+                List of tuples containing term(s) and values.
 
         """
         word_list = []
-        for doc in list(Grammer._nlp.pipe(self.term_list)):
+        term_list = self.remove_escaped_chars(self.term_list)
+        for doc in list(Grammer._nlp.pipe(term_list)):
             for token in doc:
-                word = token.text.lower()
-                if not self.in_stop_words(word) and not token.is_punct:
-                    word_list.append(word)
+                word = token.text.lower().strip()
+                if not token.is_punct:
+                    if not stopwords or (stopwords and not self.in_stop_words(word)):
+                        word_list.append(word)
         n_grams_series = pd.Series(nltk.ngrams(word_list, n)).value_counts()
         if top_n_results <= len(n_grams_series):
             n_grams_series = n_grams_series[:top_n_results]
@@ -265,7 +277,7 @@ class Grammer:
         return pd.concat(dfs, axis=1)
 
     def ngram_range(
-        self, max_n: int, n: int = 1, top_n_results: int = 250
+        self, max_n: int, n: int = 1, top_n_results: int = 250, stopwords: bool = True
     ) -> pd.DataFrame:
         """Gets ngram terms and outputs for a range of phrase lengths.
 
@@ -277,6 +289,8 @@ class Grammer:
             n(int): The minimum term length. Default is 1 (single term).
             top_n_results(int): The number of rows of results to return.
                 Default set to 150.
+            stopwords(bool): flag to indicate removal of stopwords.
+                Default is True.
 
         Returns:
             pd.DataFrame: Combined dataframe of all results from various
@@ -285,7 +299,7 @@ class Grammer:
         """
         df_list = []
         for i in range(n, max_n + 1):
-            ngrams_list = self.get_ngrams(i, top_n_results)
+            ngrams_list = self.get_ngrams(i, top_n_results, stopwords)
             df = self.df_from_terms(ngrams_list)
             df_list.append(df)
         if len(df_list) > 1:

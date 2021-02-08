@@ -107,7 +107,7 @@ def test_main_calls_grammer_with_default_args(
     result = runner.invoke(console.main, ["--file-path=test.xlsx"])
     assert result.exit_code == 0
     instance = mock_grammer.return_value
-    assert instance.ngram_range.call_args == call(5, top_n_results=250)
+    assert instance.ngram_range.call_args == call(5, top_n_results=250, stopwords=True)
 
 
 def test_main_fails_on_non_existent_path(runner: CliRunner) -> None:

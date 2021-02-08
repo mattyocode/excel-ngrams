@@ -219,6 +219,20 @@ def test_downloads_nltk_stopwords_if_not_present(
         assert grammer._stopwords is not None
 
 
+def test_displays_exception_if_nltk_stopwords_fails(
+    capsys: MockFixture,
+    mock_nltk_download: Mock,
+    mock_file_handler: Mock,
+) -> None:
+    """It raises exception with message if nltk download fails."""
+    with patch("excel_ngrams.grammer.Grammer._stopwords", new=None):
+        mock_nltk_download.side_effect = Exception
+        grammer = Grammer(mock_file_handler)
+        captured = capsys.readouterr()
+        assert "Error" in captured.out
+        assert grammer._stopwords is None
+
+
 @pytest.mark.parametrize(
     "test_word,expected",
     [("to", True), ("of", True), ("by", True), ("unicorn", False), (",", False)],
@@ -231,29 +245,28 @@ def test_if_in_nltk_stopwords(
     assert actual == expected
 
 
-# @pytest.mark.parametrize(
-#     "test_word,expected",
-#     [("'", True), (",", True), ("by", False), ("unicorn", False), (".", True)],
-# )
-# def test_get_ngrams_removes_punctuation(
-#     test_word: str,
-#     expected: bool,
-#     grammer_instance: Grammer) -> None:
-#     """It returns doesn't return punctuation."""
-#     actual = grammer_instance.is_punctuation(test_word)
-#     assert actual == expected
-
-
 def test_get_single_word_frequency(grammer_instance: Grammer) -> None:
     """It returns most frequent term with value."""
     grammer_instance.term_list = [
-        "best thing",
+        "the best the thing",
         "it's the best thing ever",
-        "best day ever",
+        "the best day ever",
         "not the best thing ever",
     ]
     result = grammer_instance.get_ngrams(n=1, top_n_results=1)
     assert result == [(("best",), 4)]
+
+
+def test_get_single_word_frequency_stopwords_false(grammer_instance: Grammer) -> None:
+    """It returns most frequent term with value including stopwords."""
+    grammer_instance.term_list = [
+        "the best the thing",
+        "it's the best thing ever",
+        "the best day ever",
+        "not the best thing ever",
+    ]
+    result = grammer_instance.get_ngrams(n=1, top_n_results=1, stopwords=False)
+    assert result == [(("the",), 5)]
 
 
 def test_get_ngrams_excludes_puncuation(grammer_instance: Grammer) -> None:
@@ -268,6 +281,23 @@ def test_get_ngrams_excludes_puncuation(grammer_instance: Grammer) -> None:
     punctuation = [",", "'", "!", "?"]
     unpacked_tuple_results = [k[0] for k, v in result]
     assert [i for i in punctuation if i in unpacked_tuple_results] == []
+
+
+def test_remove_escaped_chars(grammer_instance: Grammer) -> None:
+    """It returns text list with newline chars removed."""
+    input_list = [
+        "String with \n newline chars \n",
+        "\n",
+        "string with \t tab \t chars",
+        "\t",
+        "without any",
+    ]
+    output = grammer_instance.remove_escaped_chars(input_list)
+    assert output == [
+        "String with  newline chars",
+        "string with  tab  chars",
+        "without any",
+    ]
 
 
 def test_top_results_exceeds_results_available(grammer_instance: Grammer) -> None:
