@@ -327,4 +327,4 @@ class Grammer:
             return path
         except Exception as error:
             err_message = str(error)
-            raise click.ClickException(err_message)
+            raise click.ClickException(err_message) from None

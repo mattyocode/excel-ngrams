@@ -17,6 +17,18 @@ The column of terms to analyse must be the longest (or only) column in the docum
 
 Words are tokenised with Spacy and ngrams are generated with NLTK.
 
+## Built with
+
+- Python (strongly typed)
+- Poetry
+- Click
+- Pandas
+- Spacy
+- NLTK
+- PyTest
+- Flake8
+- Sphinx
+
 ## Requirements
 
 Requires: Python >=3.7.1, <4.0.0
