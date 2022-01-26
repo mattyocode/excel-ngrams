@@ -19,7 +19,7 @@ Words are tokenised with Spacy and ngrams are generated with NLTK.
 
 ## Built with
 
-- Python (strongly typed)
+- Python (with static type checking)
 - Poetry
 - Click
 - Pandas
