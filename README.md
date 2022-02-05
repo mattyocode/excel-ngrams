@@ -29,17 +29,24 @@ Words are tokenised with Spacy and ngrams are generated with NLTK.
 - Flake8
 - Sphinx
 
-## Run tests
+## Run tests with Poetry
 
 $ poetry install
-$ poetry run pytest
-$ install nox
+$ poetry run pytest --cov
+
+## Run all tests with nox
+
+$ nox
+
+## Run from root directory in terminal
+
+$ poetry run excel-ngrams <OPTIONS>
 
 ## Requirements
 
 Requires: Python >=3.7.1, <4.0.0
 
-## Installation
+## Installation using pip
 
 To install the Excel Ngrams Project,
 run this command in your terminal:

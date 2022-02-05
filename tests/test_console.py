@@ -6,6 +6,7 @@ from unittest.mock import call, Mock
 import click
 import click.testing
 from click.testing import CliRunner
+from freezegun import freeze_time
 import pytest
 from pytest_mock import MockFixture
 
@@ -36,15 +37,6 @@ def fake_excel_file() -> Generator[TextIO, None, None]:
     with open("test.xlsx", "w") as f:
         yield f
     os.remove("test.xlsx")
-
-
-@pytest.mark.e2e
-def test_main_succeeds_end_to_end(runner: CliRunner) -> None:
-    """It exits with a status code of zero (end-to-end)."""
-    result = runner.invoke(
-        console.main, ["--file-path=input_for_tests/test_search_listings.xlsx"]
-    )
-    assert result.exit_code == 0
 
 
 def test_main_succeeds(
@@ -132,3 +124,19 @@ def test_main_fails_on_grammer_error(
     mock_grammer.side_effect = Exception("Problemo!")
     result = runner.invoke(console.main, ["--file-path=test.xlsx"])
     assert result.exit_code == 1
+
+
+@pytest.mark.skip("e2e test creates and deletes output file - doesn't run by default")
+@pytest.mark.e2e
+def test_main_succeeds_end_to_end(runner: CliRunner) -> None:
+    """It exits with a status code of zero (end-to-end)."""
+    with freeze_time("2020-11-22 01:02:03"):
+        result = runner.invoke(
+            console.main, ["--file-path=input_for_tests/test_input.xlsx"]
+        )
+    print(result.__dict__)
+    assert result.exit_code == 0
+    assert "file written to input_for_tests/test_input_20201122010203_n-grams" in str(
+        result.stdout_bytes
+    )
+    os.remove("input_for_tests/test_input_20201122010203_n-grams.csv")
