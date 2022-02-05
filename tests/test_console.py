@@ -85,7 +85,7 @@ def test_main_calls_filehandler_specified_path(
     )
 
 
-def test_main_calls_grammer_with_file_handler_instance(
+def test_main_calls_grammer(
     runner: CliRunner,
     mock_file_handler: Mock,
     mock_grammer: Mock,
@@ -94,7 +94,7 @@ def test_main_calls_grammer_with_file_handler_instance(
     """It passes FileHandler instance to Grammer."""
     result = runner.invoke(console.main, ["--file-path=test.xlsx"])
     assert result.exit_code == 0
-    mock_grammer.assert_called_with(mock_file_handler())
+    mock_grammer.assert_called_once()
 
 
 def test_main_calls_grammer_with_default_args(

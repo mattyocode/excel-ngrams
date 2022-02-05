@@ -37,7 +37,7 @@ class FileHandler:
 
     def set_terms(
         self, file_path: str, sheet_name: Union[int, str], column_name: str
-    ) -> pd.DataFrame:
+    ) -> List[str]:
         """Sets term_list attribute from Excel doc.
 
         Uses Pandas DataFrame as an intermediate to generate list.
@@ -54,7 +54,7 @@ class FileHandler:
 
         """
         df = pd.read_excel(file_path, sheet_name=sheet_name)
-        return df[self.column_name].tolist()
+        return df[column_name].tolist()
 
     def get_terms(self) -> List[str]:
         """:obj:`list` of :obj:`str`: Getter method returns terms_list."""
@@ -81,10 +81,10 @@ class FileHandler:
         date_time = now.strftime("%Y%m%d%H%M%S")
         return f"{file_name}_{date_time}_n-grams"
 
-    def write_df_to_file(self, df: pd.DataFrame) -> str:
+    def write(self, df: pd.DataFrame) -> str:
         """Writes DataFrame to csv file.
 
-        Gets path from get_destination_path method and uses
+        Gets path from get_destination_path method and use
         Pandas to_csv function to write DataFrame to csv file.
 
         Args:
@@ -93,22 +93,29 @@ class FileHandler:
 
         Returns:
             str: Path to which csv file was written.
+
+        Raises:
+            ClickException: Writing to csv file failed.
         """
-        path = self.get_destination_path()
-        df.to_csv(f"{path}.csv")
-        return path
+        try:
+            path = self.get_destination_path()
+            df.to_csv(f"{path}.csv")
+            return path
+        except Exception as error:
+            err_message = str(error)
+            raise click.ClickException(err_message) from None
 
 
 class Grammer:
-    """Class to get n-grams from list of terms.
+    """Class that returns n-grams from text as a list of strings.
 
-    Using Spacy's NLP pipe and NLTK's ngrams function to generate
-    ngrams within a given range and output them to a Pandas DataFrame
-    for writing to an output file.
+        Words are delineated by white space and punctuation.
+        Using Spacy's NLP pipe and NLTK's ngrams function to generate
+        ngrams within a given word length range and output them to a
+        Pandas DataFrame for writing to an output file.
 
     Attributes:
-        file_handler(:obj:`FileHandler`): FileHandler obj with input file path.
-        term_list: Term list from FileHandler attribute.
+        term_list: List of text as strings (one or more).
 
     _nlp and _stopwords are shared across all instances, but is loaded by the
     constructor to avoid loading is in cases where it isn't needed.
@@ -118,10 +125,9 @@ class Grammer:
     _nlp = None
     _stopwords = None
 
-    def __init__(self, file_handler: FileHandler) -> None:
+    def __init__(self, terms_list: List[str]) -> None:
         """Constructs attributes for Grammer object from FileHandler object."""
-        self.file_handler = file_handler
-        self.term_list = file_handler.get_terms()
+        self.term_list = terms_list
 
         if Grammer._nlp is None:
             try:
@@ -307,24 +313,3 @@ class Grammer:
             return combined_dataframe
         else:
             return df_list[0]
-
-    def output_csv_file(self, df: pd.DataFrame) -> str:
-        """Write dataframe to csv file.
-
-        Args:
-            df(pd.DataFrame): Dataframe with columns of terms
-                and values.
-
-        Returns:
-            path(str): The path the csv file was written to.
-
-        Raises:
-            ClickException: Writing to csv file failed.
-
-        """
-        try:
-            path = self.file_handler.write_df_to_file(df)
-            return path
-        except Exception as error:
-            err_message = str(error)
-            raise click.ClickException(err_message) from None

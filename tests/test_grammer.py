@@ -43,8 +43,6 @@ def excel_test_file() -> xlsxwriter.Workbook:
 @pytest.fixture
 def file_handler(excel_test_file: xlsxwriter.Workbook) -> FileHandler:
     """Fixture returns FileHandler instance."""
-    excel_test_file = excel_test_file
-
     file_handler = FileHandler("test_doc.xlsx")
     return file_handler
 
@@ -68,8 +66,8 @@ def file_handler_test_file() -> FileHandler:
 @pytest.fixture
 def grammer_instance() -> Grammer:
     """Fixture returns Grammer instance."""
-    file_handler_mock = Mock()
-    grammer_instance = Grammer(file_handler_mock)
+    terms_list = ["test"]
+    grammer_instance = Grammer(terms_list)
     return grammer_instance
 
 
@@ -166,11 +164,21 @@ def test_writes_df_to_correct_path(
 ) -> None:
     """It returns expected path for writing csv to."""
     empty_df = pd.DataFrame()
-    result = file_handler.write_df_to_file(empty_df)
+    result = file_handler.write(empty_df)
 
     assert result == "test/destination/file_date_n-grams"
     args, kwargs = mock_open.call_args
     assert "test/destination/file_date_n-grams.csv" in args
+
+
+@patch("excel_ngrams.grammer.pd")
+def test_handles_errors_when_writing_file(
+    mock_pandas: Mock, file_handler: FileHandler
+) -> None:
+    """It raises `ClickException` when writing file fails."""
+    mock_pandas.side_effect = Exception("boom!")
+    with pytest.raises(click.ClickException):
+        file_handler.write({})
 
 
 @pytest.mark.e2e
@@ -339,7 +347,8 @@ def test_get_tri_grams(grammer_instance: Grammer) -> None:
 @pytest.mark.e2e
 def test_get_bi_grams_from_file(file_handler_test_file: FileHandler) -> None:
     """It returns most frequent bigram and value from test file in directory."""
-    grammer = Grammer(file_handler_test_file)
+    test_file = file_handler_test_file.get_terms()
+    grammer = Grammer(test_file)
     result = grammer.get_ngrams(n=2, top_n_results=1)
     assert result == [(("snacks", "low"), 2)]
 
@@ -433,19 +442,3 @@ def test_ngram_range_3_gram(
     output_df = grammer_instance.ngram_range(3)
     assert len(output_df.columns) == 6
     assert mock_get_ngrams.call_count == 3
-
-
-def test_grammer_returns_path_after_writing_file(mock_file_handler: Mock) -> None:
-    """It returns path with no exception is raised."""
-    mock_file_handler.write_df_to_file.return_value = "fake/path/file.csv"
-    grammer_instance = Grammer(mock_file_handler)
-    output = grammer_instance.output_csv_file("df")
-    assert output == "fake/path/file.csv"
-
-
-def test_grammer_handles_writing_file_errors(mock_file_handler: Mock) -> None:
-    """It raises `ClickException` when writing file fails."""
-    mock_file_handler.write_df_to_file.side_effect = Exception("boom!")
-    grammer_instance = Grammer(mock_file_handler)
-    with pytest.raises(click.ClickException):
-        grammer_instance.output_csv_file("df")
