@@ -2,7 +2,8 @@
 import click
 
 from . import __version__
-from .grammer import FileHandler, Grammer
+from .file_handler import FileHandler
+from .grammer import Grammer
 
 
 @click.command()
