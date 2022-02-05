@@ -29,6 +29,12 @@ Words are tokenised with Spacy and ngrams are generated with NLTK.
 - Flake8
 - Sphinx
 
+## Run tests
+
+$ poetry install
+$ poetry run pytest
+$ install nox
+
 ## Requirements
 
 Requires: Python >=3.7.1, <4.0.0

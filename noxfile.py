@@ -59,6 +59,7 @@ def lint(session: Session) -> None:
         "flake8-docstrings",
         "flake8-import-order",
         "darglint",
+        "toml",
     )
     session.run("flake8", *args)
 

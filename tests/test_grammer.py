@@ -1,75 +1,28 @@
 """Tests cases for the grammer module."""
-import os
-from unittest.mock import Mock, mock_open, patch
+from unittest.mock import Mock, patch
 
-import click
-from freezegun import freeze_time
 import pandas as pd
 import pytest
 from pytest_mock import MockFixture
-import xlsxwriter
 
-from excel_ngrams.grammer import FileHandler, Grammer
+from excel_ngrams.grammer import Grammer
 
-
-# ------- Instance fixtures -------
-
-
-@pytest.fixture(scope="session")
-def excel_test_file() -> xlsxwriter.Workbook:
-    """Helper function to create simple xlsx file for testing."""
-    excel_test_file = xlsxwriter.Workbook("test_doc.xlsx")
-    worksheet = excel_test_file.add_worksheet()
-    terms_column = (
-        "Keyword",
-        "diet snacks",
-        "keto snacks",
-        "low carb snacks",
-        "low calorie snacks",
-    )
-    row = 0
-    col = 0
-
-    for term in terms_column:
-        worksheet.write(row, col, term)
-        row += 1
-    excel_test_file.close()
-
-    yield excel_test_file
-
-    os.remove("test_doc.xlsx")
+TEST_DATA = [
+    "diet snacks",
+    "keto snacks",
+    "low carb snacks",
+    "low calorie snacks",
+]
 
 
-@pytest.fixture
-def file_handler(excel_test_file: xlsxwriter.Workbook) -> FileHandler:
-    """Fixture returns FileHandler instance."""
-    excel_test_file = excel_test_file
-
-    file_handler = FileHandler("test_doc.xlsx")
-    return file_handler
-
-
-@pytest.fixture
-def file_handler_test_file() -> FileHandler:
-    """Fixture returns FileHandler instance.
-
-    FileHandler is constructed from test xlsx file
-    in input_for_tests directory.
-
-    Returns:
-        :obj:`FileHandler`: Instantiated with actual Excel doc.
-    """
-    file_handler_test_file = FileHandler(
-        "input_for_tests/test_search_listings.xlsx", column_name="Keyword"
-    )
-    return file_handler_test_file
+# ------- Instance fixture -------
 
 
 @pytest.fixture
 def grammer_instance() -> Grammer:
     """Fixture returns Grammer instance."""
-    file_handler_mock = Mock()
-    grammer_instance = Grammer(file_handler_mock)
+    terms_list = ["test"]
+    grammer_instance = Grammer(terms_list)
     return grammer_instance
 
 
@@ -124,69 +77,11 @@ def mock_nltk_stopwords(mocker: MockFixture) -> Mock:
     return mocker.patch("nltk.corpus.stopwords.words")
 
 
-# ------- File Handler tests -------
-
-
-def test_gets_words_list_from_excel(file_handler: FileHandler) -> None:
-    """It returns terms as list from constructed test Excel doc."""
-    result = file_handler.get_terms()
-    assert type(result) == list
-    assert result == [
-        "diet snacks",
-        "keto snacks",
-        "low carb snacks",
-        "low calorie snacks",
-    ]
-
-
-def test_get_file_path(file_handler: FileHandler) -> None:
-    """It gets file path from class attribute."""
-    result = file_handler.get_file_path()
-    assert result == "test_doc.xlsx"
-
-
-@patch.object(FileHandler, "get_file_path")
-def test_write_to_file_path(
-    mock_get_file_path: Mock, file_handler: FileHandler
-) -> None:
-    """It returns expected file path from constructed test Excel doc."""
-    mock_get_file_path.return_value = "test/test_path"
-    with freeze_time("2020-11-22 01:02:03"):
-        output = file_handler.get_destination_path()
-        assert output == "test/test_path_20201122010203_n-grams"
-
-
-@patch(
-    "excel_ngrams.grammer.FileHandler.get_destination_path",
-    return_value="test/destination/file_date_n-grams",
-)
-@patch("builtins.open", new_callable=mock_open)
-def test_writes_df_to_correct_path(
-    mock_open: Mock, mock_destination_path: Mock, file_handler: FileHandler
-) -> None:
-    """It returns expected path for writing csv to."""
-    empty_df = pd.DataFrame()
-    result = file_handler.write_df_to_file(empty_df)
-
-    assert result == "test/destination/file_date_n-grams"
-    args, kwargs = mock_open.call_args
-    assert "test/destination/file_date_n-grams.csv" in args
-
-
-@pytest.mark.e2e
-def test_write_to_file_path_actual_doc(file_handler_test_file: FileHandler) -> None:
-    """It returns expected file path from test Excel doc in input_for_tests."""
-    with freeze_time("2020-11-22 01:02:03"):
-        output = file_handler_test_file.get_destination_path()
-        expected = "input_for_tests/test_search_listings_20201122010203_n-grams"
-        assert output == expected
-
-
 # ------- Grammer tests -------
 
 
 def test_loads_spacy_model_if_present(
-    mock_spacy_load: Mock, mock_spacy_download: Mock, mock_file_handler: Mock
+    mock_spacy_load: Mock, mock_spacy_download: Mock
 ) -> None:
     """It calls spacy.load without calling download."""
     with patch("excel_ngrams.grammer.Grammer._nlp", new=None):
@@ -198,23 +93,23 @@ def test_loads_spacy_model_if_present(
 
 
 def test_downloads_spacy_model_if_not_present(
-    mock_spacy_load: Mock, mock_spacy_download: Mock, mock_file_handler: Mock
+    mock_spacy_load: Mock, mock_spacy_download: Mock
 ) -> None:
     """It calls spacy.download with correct command."""
     with patch("excel_ngrams.grammer.Grammer._nlp", new=None):
         mock_spacy_load.side_effect = [OSError, Mock()]
-        grammer = Grammer(mock_file_handler)
+        grammer = Grammer(TEST_DATA)
         mock_spacy_download.assert_called_with("en")
         assert grammer._nlp is not None
 
 
 def test_downloads_nltk_stopwords_if_not_present(
-    mock_nltk_download: Mock, mock_file_handler: Mock, mock_nltk_stopwords: Mock
+    mock_nltk_download: Mock, mock_nltk_stopwords: Mock
 ) -> None:
     """It calls os.system with correct command."""
     with patch("excel_ngrams.grammer.Grammer._stopwords", new=None):
         mock_nltk_stopwords.return_value = "fake_stopwords"
-        grammer = Grammer(mock_file_handler)
+        grammer = Grammer(TEST_DATA)
         mock_nltk_stopwords.assert_called_with("english")
         assert grammer._stopwords is not None
 
@@ -222,12 +117,11 @@ def test_downloads_nltk_stopwords_if_not_present(
 def test_displays_exception_if_nltk_stopwords_fails(
     capsys: MockFixture,
     mock_nltk_download: Mock,
-    mock_file_handler: Mock,
 ) -> None:
     """It raises exception with message if nltk download fails."""
     with patch("excel_ngrams.grammer.Grammer._stopwords", new=None):
         mock_nltk_download.side_effect = Exception
-        grammer = Grammer(mock_file_handler)
+        grammer = Grammer(TEST_DATA)
         captured = capsys.readouterr()
         assert "Error" in captured.out
         assert grammer._stopwords is None
@@ -337,9 +231,15 @@ def test_get_tri_grams(grammer_instance: Grammer) -> None:
 
 
 @pytest.mark.e2e
-def test_get_bi_grams_from_file(file_handler_test_file: FileHandler) -> None:
+def test_get_bi_grams_from_file() -> None:
     """It returns most frequent bigram and value from test file in directory."""
-    grammer = Grammer(file_handler_test_file)
+    test_terms = [
+        "diet snacks",
+        "keto snacks",
+        "low carb snacks",
+        "low calorie snacks",
+    ]
+    grammer = Grammer(test_terms)
     result = grammer.get_ngrams(n=2, top_n_results=1)
     assert result == [(("snacks", "low"), 2)]
 
@@ -433,19 +333,3 @@ def test_ngram_range_3_gram(
     output_df = grammer_instance.ngram_range(3)
     assert len(output_df.columns) == 6
     assert mock_get_ngrams.call_count == 3
-
-
-def test_grammer_returns_path_after_writing_file(mock_file_handler: Mock) -> None:
-    """It returns path with no exception is raised."""
-    mock_file_handler.write_df_to_file.return_value = "fake/path/file.csv"
-    grammer_instance = Grammer(mock_file_handler)
-    output = grammer_instance.output_csv_file("df")
-    assert output == "fake/path/file.csv"
-
-
-def test_grammer_handles_writing_file_errors(mock_file_handler: Mock) -> None:
-    """It raises `ClickException` when writing file fails."""
-    mock_file_handler.write_df_to_file.side_effect = Exception("boom!")
-    grammer_instance = Grammer(mock_file_handler)
-    with pytest.raises(click.ClickException):
-        grammer_instance.output_csv_file("df")

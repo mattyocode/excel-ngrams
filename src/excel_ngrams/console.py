@@ -2,7 +2,8 @@
 import click
 
 from . import __version__
-from .grammer import FileHandler, Grammer
+from .file_handler import FileHandler
+from .grammer import Grammer
 
 
 @click.command()
@@ -22,19 +23,20 @@ def main(
     stopwords: bool,
 ) -> None:
     """Excel n-grams project CLI interface."""
-    read_file = FileHandler(
+    file_handler = FileHandler(
         file_path=file_path, sheet_name=sheet_name, column_name=column_name
     )
+    text_to_anlayse = file_handler.get_terms()
 
     click.echo("Reading file...")
 
-    grammer = Grammer(read_file)
+    grammer = Grammer(text_to_anlayse)
 
     click.echo("Performing n-gram analysis...")
 
-    n_gram_dataframe = grammer.ngram_range(
+    results_dataframe = grammer.ngram_range(
         max_n, top_n_results=top_results, stopwords=stopwords
     )
-    output_file_path = grammer.output_csv_file(n_gram_dataframe)
+    output_file_path = file_handler.write(results_dataframe)
 
     click.secho(f"CSV file written to {output_file_path}.", fg="green")
