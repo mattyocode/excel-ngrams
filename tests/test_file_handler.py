@@ -57,7 +57,7 @@ def file_handler_test_file() -> FileHandler:
         :obj:`FileHandler`: Instantiated with actual Excel doc.
     """
     file_handler_test_file = FileHandler(
-        "input_for_tests/test_search_listings.xlsx", column_name="Keyword"
+        "input_for_tests/test_input.xlsx", column_name="Keyword"
     )
     return file_handler_test_file
 
@@ -121,10 +121,12 @@ def test_handles_errors_when_writing_file(
         file_handler.write({})
 
 
-@pytest.mark.e2e
-def test_write_to_file_path_actual_doc(file_handler_test_file: FileHandler) -> None:
+# @pytest.mark.e2e
+def test_destination_path_includes_timestamp(
+    file_handler_test_file: FileHandler,
+) -> None:
     """It returns expected file path from test Excel doc in input_for_tests."""
     with freeze_time("2020-11-22 01:02:03"):
         output = file_handler_test_file.get_destination_path()
-        expected = "input_for_tests/test_search_listings_20201122010203_n-grams"
+        expected = "input_for_tests/test_input_20201122010203_n-grams"
         assert output == expected

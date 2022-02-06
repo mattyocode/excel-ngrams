@@ -1,6 +1,5 @@
 # Project specific
 input/
-input_for_tests/
 .flake8
 .darglint
 .pre-commit-config.yaml
